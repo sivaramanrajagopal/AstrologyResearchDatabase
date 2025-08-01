@@ -1,6 +1,6 @@
 Flask==2.3.3
 gunicorn==21.2.0
-pyswisseph==2.10.3
+pyswisseph==2.10.3.2
 pytz==2023.3
 supabase==2.0.2
 requests==2.31.0
