@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Birth Chart - Global Astrology Database</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .form-container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #333;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 16px;
+        }
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+            margin-left: 10px;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        .alert {
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+        .alert-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .alert-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .location-info {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        .section-title {
+            color: #667eea;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 5px;
+            margin-bottom: 15px;
+        }
+        .category-info {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            font-size: 14px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>➕ Add New Birth Chart</h1>
+        <p>Enter birth details for global astrology research with automatic timezone detection</p>
+    </div>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ 'error' if category == 'error' else category }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <div class="form-container">
+        <form method="POST" id="birthChartForm">
+            <h3 class="section-title">Personal Information</h3>
+            
+            <div class="form-group">
+                <label for="name">Full Name *</label>
+                <input type="text" id="name" name="name" required>
+            </div>
+
+            <div class="form-group">
+                <label for="gender">Gender *</label>
+                <select id="gender" name="gender" required>
+                    <option value="">Select Gender</option>
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                    <option value="other">Other</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="date_of_birth">Date of Birth *</label>
+                <input type="date" id="date_of_birth" name="date_of_birth" required>
+            </div>
+
+            <div class="form-group">
+                <label for="time_of_birth">Time of Birth *</label>
+                <input type="time" id="time_of_birth" name="time_of_birth" required>
+            </div>
+
+            <div class="form-group">
+                <label for="place_of_birth">Place of Birth *</label>
+                <input type="text" id="place_of_birth" name="place_of_birth" placeholder="e.g., Mumbai, India" required>
+            </div>
+
+            <div id="location-info" class="location-info">
+                <strong>📍 Location Details:</strong>
+                <div id="location-details"></div>
+            </div>
+
+            <h3 class="section-title">Research Categories</h3>
+            
+            <div class="category-info">
+                <strong>📊 Simplified Categories:</strong> 10 primary categories with 10-15 sub-categories each for better usability.
+            </div>
+            
+            <div class="form-group">
+                <label for="primary_category">Primary Category *</label>
+                <select id="primary_category" name="primary_category" required>
+                    <option value="">Select Primary Category</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="sub_category">Sub Category</label>
+                <select id="sub_category" name="sub_category">
+                    <option value="">Select Sub Category</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="specific_condition">Specific Condition</label>
+                <select id="specific_condition" name="specific_condition">
+                    <option value="">Select Specific Condition</option>
+                </select>
+            </div>
+
+            <h3 class="section-title">Additional Details</h3>
+            
+            <div class="form-group">
+                <label for="description">Description</label>
+                <textarea id="description" name="description" rows="4" placeholder="Describe the case or situation..."></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="outcome">Outcome</label>
+                <select id="outcome" name="outcome">
+                    <option value="unknown">Unknown</option>
+                    <option value="positive">Positive</option>
+                    <option value="negative">Negative</option>
+                    <option value="neutral">Neutral</option>
+                    <option value="mixed">Mixed</option>
+                    <option value="pending">Pending</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="severity">Severity</label>
+                <select id="severity" name="severity">
+                    <option value="unknown">Unknown</option>
+                    <option value="mild">Mild</option>
+                    <option value="moderate">Moderate</option>
+                    <option value="severe">Severe</option>
+                    <option value="critical">Critical</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="timing">Timing</label>
+                <select id="timing" name="timing">
+                    <option value="unknown">Unknown</option>
+                    <option value="immediate">Immediate</option>
+                    <option value="short_term">Short Term</option>
+                    <option value="medium_term">Medium Term</option>
+                    <option value="long_term">Long Term</option>
+                    <option value="permanent">Permanent</option>
+                    <option value="recurring">Recurring</option>
+                    <option value="seasonal">Seasonal</option>
+                    <option value="cyclical">Cyclical</option>
+                </select>
+            </div>
+
+            <h3 class="section-title">Research Details</h3>
+            
+            <div class="form-group">
+                <label for="researcher_id">Researcher ID</label>
+                <input type="text" id="researcher_id" name="researcher_id" placeholder="Your researcher identifier">
+            </div>
+
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" name="consent_given" value="1">
+                    Consent Given
+                </label>
+            </div>
+
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" name="anonymize" value="1" checked>
+                    Anonymize Data
+                </label>
+            </div>
+
+            <div style="text-align: center; margin-top: 30px;">
+                <button type="submit" class="btn btn-primary">🔮 Calculate & Save Birth Chart</button>
+                <a href="{{ url_for('index') }}" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        // Global variables to store category data
+        let categoryData = null;
+
+        // Load categories on page load
+        window.addEventListener('DOMContentLoaded', function() {
+            loadCategories();
+        });
+
+        // Load categories from API
+        async function loadCategories() {
+            try {
+                const response = await fetch('/api/categories');
+                categoryData = await response.json();
+                populatePrimaryCategories();
+            } catch (error) {
+                console.error('Error loading categories:', error);
+            }
+        }
+
+        // Populate primary categories
+        function populatePrimaryCategories() {
+            const select = document.getElementById('primary_category');
+            select.innerHTML = '<option value="">Select Primary Category</option>';
+            
+            Object.entries(categoryData.primary_categories).forEach(([key, value]) => {
+                const option = document.createElement('option');
+                option.value = key;
+                option.textContent = value;
+                select.appendChild(option);
+            });
+
+            // Add event listener
+            select.addEventListener('change', function() {
+                populateSubCategories();
+            });
+        }
+
+        // Populate sub categories
+        function populateSubCategories() {
+            const primarySelect = document.getElementById('primary_category');
+            const subSelect = document.getElementById('sub_category');
+            const specificSelect = document.getElementById('specific_condition');
+            
+            // Clear sub and specific categories
+            subSelect.innerHTML = '<option value="">Select Sub Category</option>';
+            specificSelect.innerHTML = '<option value="">Select Specific Condition</option>';
+            
+            const selectedPrimary = primarySelect.value;
+            
+            if (selectedPrimary && categoryData.sub_categories[selectedPrimary]) {
+                Object.entries(categoryData.sub_categories[selectedPrimary]).forEach(([key, value]) => {
+                    const option = document.createElement('option');
+                    option.value = key;
+                    option.textContent = value;
+                    subSelect.appendChild(option);
+                });
+
+                // Add event listener for sub category
+                subSelect.addEventListener('change', function() {
+                    populateSpecificConditions();
+                });
+            }
+        }
+
+        // Populate specific conditions
+        function populateSpecificConditions() {
+            const subSelect = document.getElementById('sub_category');
+            const specificSelect = document.getElementById('specific_condition');
+            
+            specificSelect.innerHTML = '<option value="">Select Specific Condition</option>';
+            
+            const selectedSub = subSelect.value;
+            
+            if (selectedSub && categoryData.specific_conditions[selectedSub]) {
+                Object.entries(categoryData.specific_conditions[selectedSub]).forEach(([key, value]) => {
+                    const option = document.createElement('option');
+                    option.value = key;
+                    option.textContent = value;
+                    specificSelect.appendChild(option);
+                });
+            }
+        }
+
+        // Location detection
+        document.getElementById('place_of_birth').addEventListener('blur', function() {
+            const place = this.value;
+            if (place) {
+                document.getElementById('location-info').style.display = 'block';
+                document.getElementById('location-details').innerHTML = 
+                    `Detecting coordinates and timezone for: ${place}`;
+            }
+        });
+
+        // Form validation
+        document.getElementById('birthChartForm').addEventListener('submit', function(e) {
+            const primaryCategory = document.getElementById('primary_category').value;
+            if (!primaryCategory) {
+                e.preventDefault();
+                alert('Please select a primary category');
+                return false;
+            }
+        });
+    </script>
+</body>
+</html> 

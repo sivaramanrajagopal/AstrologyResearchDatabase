@@ -1,0 +1,210 @@
+{% extends "base.html" %}
+
+{% block title %}Add Birth Chart - Astrological Birth Chart Database{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1><i class="fas fa-plus"></i> Add New Birth Chart</h1>
+            <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-user-plus"></i> Birth Chart Information</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" id="birthChartForm">
+                    <!-- Personal Information -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h6 class="text-primary"><i class="fas fa-user"></i> Personal Information</h6>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="name" class="form-label">Full Name *</label>
+                            <input type="text" class="form-control" id="name" name="name" required>
+                            <div class="form-text">Enter the person's full name</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="gender" class="form-label">Gender *</label>
+                            <select class="form-select" id="gender" name="gender" required>
+                                <option value="">Select Gender</option>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Birth Details -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h6 class="text-primary"><i class="fas fa-calendar"></i> Birth Details</h6>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="date_of_birth" class="form-label">Date of Birth *</label>
+                            <input type="date" class="form-control" id="date_of_birth" name="date_of_birth" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="time_of_birth" class="form-label">Time of Birth *</label>
+                            <input type="time" class="form-control" id="time_of_birth" name="time_of_birth" required>
+                            <div class="form-text">Use 24-hour format (e.g., 14:30 for 2:30 PM)</div>
+                        </div>
+                    </div>
+
+                    <!-- Birth Location -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h6 class="text-primary"><i class="fas fa-map-marker-alt"></i> Birth Location</h6>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="city" class="form-label">City *</label>
+                            <input type="text" class="form-control" id="city" name="city" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="country" class="form-label">Country *</label>
+                            <input type="text" class="form-control" id="country" name="country" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="latitude" class="form-label">Latitude</label>
+                            <input type="number" step="0.000001" class="form-control" id="latitude" name="latitude" placeholder="e.g., 40.7128">
+                            <div class="form-text">Optional: For accurate planetary calculations</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="longitude" class="form-label">Longitude</label>
+                            <input type="number" step="0.000001" class="form-control" id="longitude" name="longitude" placeholder="e.g., -74.0060">
+                            <div class="form-text">Optional: For accurate planetary calculations</div>
+                        </div>
+                    </div>
+
+                    <!-- Research Information -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h6 class="text-primary"><i class="fas fa-microscope"></i> Research Information</h6>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="research_category" class="form-label">Research Category *</label>
+                            <select class="form-select" id="research_category" name="research_category" required>
+                                <option value="">Select Research Category</option>
+                                {% for category in categories %}
+                                <option value="{{ category }}">{{ category }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="researcher_id" class="form-label">Researcher ID *</label>
+                            <input type="text" class="form-control" id="researcher_id" name="researcher_id" required>
+                            <div class="form-text">Your unique identifier (e.g., R001, John_Doe)</div>
+                        </div>
+                    </div>
+
+                    <!-- Additional Notes -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h6 class="text-primary"><i class="fas fa-sticky-note"></i> Additional Notes</h6>
+                            <label for="additional_notes" class="form-label">Notes & Observations</label>
+                            <textarea class="form-control" id="additional_notes" name="additional_notes" rows="4" 
+                                      placeholder="Add any relevant observations, context, or additional information about this birth chart..."></textarea>
+                            <div class="form-text">Optional: Include any relevant details about the person's life, achievements, or characteristics</div>
+                        </div>
+                    </div>
+
+                    <!-- Form Actions -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="d-flex justify-content-between">
+                                <button type="reset" class="btn btn-outline-secondary">
+                                    <i class="fas fa-undo"></i> Reset Form
+                                </button>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save"></i> Save Birth Chart
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Research Guidelines -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="fas fa-lightbulb"></i> Data Collection Guidelines</h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="text-success"><i class="fas fa-check-circle"></i> What to Collect</h6>
+                        <ul class="list-unstyled small">
+                            <li><i class="fas fa-arrow-right text-success"></i> Business Success: Entrepreneurs, CEOs, successful business owners</li>
+                            <li><i class="fas fa-arrow-right text-success"></i> Medical: Individuals with autism, ADHD, or other conditions</li>
+                            <li><i class="fas fa-arrow-right text-success"></i> IT Careers: Software developers, tech professionals</li>
+                            <li><i class="fas fa-arrow-right text-success"></i> Creative Arts: Artists, musicians, writers</li>
+                            <li><i class="fas fa-arrow-right text-success"></i> Sports: Professional athletes, sports personalities</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-warning"><i class="fas fa-exclamation-triangle"></i> Important Notes</h6>
+                        <ul class="list-unstyled small">
+                            <li><i class="fas fa-arrow-right text-warning"></i> Ensure accurate birth time (within 15 minutes)</li>
+                            <li><i class="fas fa-arrow-right text-warning"></i> Verify birth location details</li>
+                            <li><i class="fas fa-arrow-right text-warning"></i> Use consistent researcher IDs</li>
+                            <li><i class="fas fa-arrow-right text-warning"></i> Respect privacy and confidentiality</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Set default date to today
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('date_of_birth').max = today;
+    
+    // Form validation
+    const form = document.getElementById('birthChartForm');
+    form.addEventListener('submit', function(e) {
+        const requiredFields = form.querySelectorAll('[required]');
+        let isValid = true;
+        
+        requiredFields.forEach(field => {
+            if (!field.value.trim()) {
+                field.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                field.classList.remove('is-invalid');
+            }
+        });
+        
+        if (!isValid) {
+            e.preventDefault();
+            alert('Please fill in all required fields.');
+        }
+    });
+    
+    // Real-time validation
+    const inputs = form.querySelectorAll('input, select');
+    inputs.forEach(input => {
+        input.addEventListener('blur', function() {
+            if (this.hasAttribute('required') && !this.value.trim()) {
+                this.classList.add('is-invalid');
+            } else {
+                this.classList.remove('is-invalid');
+            }
+        });
+    });
+});
+</script>
+{% endblock %} 

@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Astrological Birth Chart Database{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1><i class="fas fa-star"></i> Research Dashboard</h1>
+            <a href="{{ url_for('add_birth_chart') }}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Add New Birth Chart
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Progress Overview -->
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card bg-primary text-white">
+            <div class="card-body text-center">
+                <h3 class="card-title">{{ total_charts }}</h3>
+                <p class="card-text">Total Birth Charts</p>
+                <div class="progress bg-white bg-opacity-25">
+                    <div class="progress-bar bg-white" style="width: {{ (total_charts / 400) * 100 }}%"></div>
+                </div>
+                <small class="mt-2 d-block">{{ 400 - total_charts }} charts remaining to reach 400</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-success text-white">
+            <div class="card-body text-center">
+                <h3 class="card-title">{{ categories|length }}</h3>
+                <p class="card-text">Research Categories</p>
+                <i class="fas fa-tags fa-2x"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-info text-white">
+            <div class="card-body text-center">
+                <h3 class="card-title">
+                    {% if total_charts > 0 %}
+                        {{ "%.1f"|format((total_charts / 400) * 100) }}%
+                    {% else %}
+                        0%
+                    {% endif %}
+                </h3>
+                <p class="card-text">Collection Progress</p>
+                <i class="fas fa-chart-line fa-2x"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Category Distribution -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-chart-pie"></i> Data Collection by Category</h5>
+            </div>
+            <div class="card-body">
+                {% if category_counts %}
+                    <div class="row">
+                        {% for category, count in category_counts %}
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <div class="d-flex justify-content-between align-items-center p-2 border rounded">
+                                <span class="fw-bold">{{ category }}</span>
+                                <span class="badge bg-primary">{{ count }}</span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted text-center">No data collected yet. Start by adding your first birth chart!</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-tasks"></i> Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('add_birth_chart') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-plus"></i> Add New Birth Chart
+                    </a>
+                    <a href="{{ url_for('view_charts') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-list"></i> View All Charts
+                    </a>
+                    <a href="{{ url_for('statistics') }}" class="btn btn-outline-info">
+                        <i class="fas fa-chart-bar"></i> View Statistics
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-download"></i> Export Data</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('export_data', format='csv') }}" class="btn btn-outline-success">
+                        <i class="fas fa-file-csv"></i> Export All Data (CSV)
+                    </a>
+                    <a href="{{ url_for('export_data', format='json') }}" class="btn btn-outline-warning">
+                        <i class="fas fa-file-code"></i> Export All Data (JSON)
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Research Guidelines -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-lightbulb"></i> Research Guidelines</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-check-circle text-success"></i> Best Practices</h6>
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-arrow-right text-primary"></i> Ensure accurate birth time (within 15 minutes)</li>
+                            <li><i class="fas fa-arrow-right text-primary"></i> Verify birth location (city and country)</li>
+                            <li><i class="fas fa-arrow-right text-primary"></i> Use consistent researcher IDs</li>
+                            <li><i class="fas fa-arrow-right text-primary"></i> Add detailed notes for context</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-exclamation-triangle text-warning"></i> Important Notes</h6>
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-arrow-right text-warning"></i> Respect privacy and confidentiality</li>
+                            <li><i class="fas fa-arrow-right text-warning"></i> Only collect data with consent</li>
+                            <li><i class="fas fa-arrow-right text-warning"></i> Anonymize personal information</li>
+                            <li><i class="fas fa-arrow-right text-warning"></i> Use for research purposes only</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

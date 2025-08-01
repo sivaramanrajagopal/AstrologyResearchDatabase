@@ -1,0 +1,155 @@
+{
+  "Sun": {
+    "longitude": 151.8858896390475,
+    "retrograde": false,
+    "rasi": "Kanni",
+    "nakshatra": "Uttara Phalguni",
+    "pada": 2
+  },
+  "Moon": {
+    "longitude": 357.2971755782213,
+    "retrograde": false,
+    "rasi": "Meena",
+    "nakshatra": "Revati",
+    "pada": 4
+  },
+  "Mercury": {
+    "longitude": 141.70578087402484,
+    "retrograde": false,
+    "rasi": "Simha",
+    "nakshatra": "Purva Phalguni",
+    "pada": 3
+  },
+  "Venus": {
+    "longitude": 196.0626938317716,
+    "retrograde": false,
+    "rasi": "Thula",
+    "nakshatra": "Swati",
+    "pada": 3
+  },
+  "Mars": {
+    "longitude": 185.67619903192715,
+    "retrograde": false,
+    "rasi": "Thula",
+    "nakshatra": "Chitra",
+    "pada": 4
+  },
+  "Jupiter": {
+    "longitude": 98.88469045129105,
+    "retrograde": false,
+    "rasi": "Kataka",
+    "nakshatra": "Pushya",
+    "pada": 2
+  },
+  "Saturn": {
+    "longitude": 133.1894460120983,
+    "retrograde": false,
+    "rasi": "Simha",
+    "nakshatra": "Magha",
+    "pada": 4
+  },
+  "Uranus": {
+    "longitude": 200.2140108698601,
+    "retrograde": false,
+    "rasi": "Thula",
+    "nakshatra": "Vishakha",
+    "pada": 1
+  },
+  "Neptune": {
+    "longitude": 232.11446927944027,
+    "retrograde": false,
+    "rasi": "Vrischika",
+    "nakshatra": "Jyeshtha",
+    "pada": 2
+  },
+  "Pluto": {
+    "longitude": 172.2026854204774,
+    "retrograde": false,
+    "rasi": "Kanni",
+    "nakshatra": "Hasta",
+    "pada": 4
+  },
+  "Rahu": {
+    "longitude": 153.1773478131108,
+    "retrograde": true,
+    "rasi": "Kanni",
+    "nakshatra": "Uttara Phalguni",
+    "pada": 2
+  },
+  "Ketu": {
+    "longitude": 333.1773478131108,
+    "retrograde": true,
+    "rasi": "Meena",
+    "nakshatra": "Purva Bhadrapada",
+    "pada": 4
+  },
+  "Ascendant": {
+    "longitude": 54.42059303634764,
+    "retrograde": null,
+    "rasi": "Rishaba",
+    "nakshatra": "Mrigashira",
+    "pada": 1
+  },
+  "House_Cusps": [
+    {
+      "house": 1,
+      "longitude": 54.42059303634764,
+      "rasi": "Rishaba"
+    },
+    {
+      "house": 2,
+      "longitude": 81.67790933738594,
+      "rasi": "Mithuna"
+    },
+    {
+      "house": 3,
+      "longitude": 108.93522563842424,
+      "rasi": "Kataka"
+    },
+    {
+      "house": 4,
+      "longitude": 136.19254193946247,
+      "rasi": "Simha"
+    },
+    {
+      "house": 5,
+      "longitude": 168.9352256384242,
+      "rasi": "Kanni"
+    },
+    {
+      "house": 6,
+      "longitude": 201.67790933738596,
+      "rasi": "Thula"
+    },
+    {
+      "house": 7,
+      "longitude": 234.42059303634764,
+      "rasi": "Vrischika"
+    },
+    {
+      "house": 8,
+      "longitude": 261.677909337386,
+      "rasi": "Dhanus"
+    },
+    {
+      "house": 9,
+      "longitude": 288.93522563842424,
+      "rasi": "Makara"
+    },
+    {
+      "house": 10,
+      "longitude": 316.19254193946256,
+      "rasi": "Kumbha"
+    },
+    {
+      "house": 11,
+      "longitude": 348.93522563842424,
+      "rasi": "Meena"
+    },
+    {
+      "house": 12,
+      "longitude": 21.67790933738596,
+      "rasi": "Mesha"
+    }
+  ]
+}

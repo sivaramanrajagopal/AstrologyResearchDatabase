@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Birth Chart - Global Astrology Database</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .warning-box {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .warning-box h3 {
+            margin: 0 0 10px 0;
+            color: #856404;
+        }
+        .form-container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #333;
+        }
+        .form-control {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        .form-control:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 5px rgba(102, 126, 234, 0.3);
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        .btn:hover {
+            opacity: 0.9;
+        }
+        .category-info {
+            background: #e3f2fd;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 5px;
+            font-size: 14px;
+            color: #1976d2;
+        }
+        .checkbox-group {
+            margin-top: 10px;
+        }
+        .checkbox-item {
+            margin-bottom: 10px;
+        }
+        .checkbox-item input[type="checkbox"] {
+            margin-right: 8px;
+        }
+        .back-btn {
+            margin-bottom: 20px;
+        }
+        .required {
+            color: #dc3545;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>✏️ Edit Birth Chart</h1>
+        <p>Update birth chart information and recalculate planetary positions</p>
+    </div>
+
+    <div class="warning-box">
+        <h3>⚠️ Important Notice</h3>
+        <p><strong>Planetary positions will be recalculated</strong> when you save changes. This may result in different planetary positions, rasis, nakshatras, and other astrological calculations based on the updated birth data.</p>
+    </div>
+
+    <div class="back-btn">
+        <a href="{{ url_for('view_charts') }}" class="btn btn-secondary">← Back to Charts</a>
+    </div>
+
+    <div class="form-container">
+        <form method="POST" id="birthChartForm">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="name">Full Name <span class="required">*</span></label>
+                    <input type="text" id="name" name="name" class="form-control" value="{{ chart.name }}" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="gender">Gender <span class="required">*</span></label>
+                    <select id="gender" name="gender" class="form-control" required>
+                        <option value="">Select Gender</option>
+                        <option value="male" {% if chart.gender == 'male' %}selected{% endif %}>Male</option>
+                        <option value="female" {% if chart.gender == 'female' %}selected{% endif %}>Female</option>
+                        <option value="other" {% if chart.gender == 'other' %}selected{% endif %}>Other</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="date_of_birth">Date of Birth <span class="required">*</span></label>
+                    <input type="date" id="date_of_birth" name="date_of_birth" class="form-control" value="{{ chart.date_of_birth }}" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="time_of_birth">Time of Birth <span class="required">*</span></label>
+                    <input type="time" id="time_of_birth" name="time_of_birth" class="form-control" value="{{ chart.time_of_birth.split(':')[:2]|join(':') }}" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="place_of_birth">Place of Birth <span class="required">*</span></label>
+                <input type="text" id="place_of_birth" name="place_of_birth" class="form-control" value="{{ chart.place_of_birth }}" placeholder="e.g., Mumbai, India" required>
+                <div class="category-info">Enter city, state/province, and country for accurate timezone detection</div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="primary_category">Primary Category</label>
+                    <select id="primary_category" name="primary_category" class="form-control">
+                        <option value="">Select Primary Category</option>
+                        {% for key, value in category_options.primary_categories.items() %}
+                        <option value="{{ key }}" {% if chart.primary_category == key %}selected{% endif %}>{{ value }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="sub_category">Sub Category</label>
+                    <select id="sub_category" name="sub_category" class="form-control">
+                        <option value="">Select Sub Category</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="specific_condition">Specific Condition</label>
+                <select id="specific_condition" name="specific_condition" class="form-control">
+                    <option value="">Select Specific Condition</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="description">Description/Notes</label>
+                <textarea id="description" name="description" class="form-control" rows="4" placeholder="Additional notes about this birth chart...">{{ chart.description or '' }}</textarea>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="outcome">Outcome</label>
+                    <select id="outcome" name="outcome" class="form-control">
+                        <option value="">Select Outcome</option>
+                        {% for key, value in category_options.outcomes.items() %}
+                        <option value="{{ key }}" {% if chart.outcome == key %}selected{% endif %}>{{ value }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="severity">Severity</label>
+                    <select id="severity" name="severity" class="form-control">
+                        <option value="">Select Severity</option>
+                        {% for key, value in category_options.severity_levels.items() %}
+                        <option value="{{ key }}" {% if chart.severity == key %}selected{% endif %}>{{ value }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="timing">Timing</label>
+                <select id="timing" name="timing" class="form-control">
+                    <option value="">Select Timing</option>
+                    {% for key, value in category_options.timing_categories.items() %}
+                    <option value="{{ key }}" {% if chart.timing == key %}selected{% endif %}>{{ value }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="researcher_id">Researcher ID</label>
+                <input type="text" id="researcher_id" name="researcher_id" class="form-control" value="{{ chart.researcher_id or '' }}" placeholder="Researcher identifier">
+            </div>
+
+            <div class="checkbox-group">
+                <div class="checkbox-item">
+                    <input type="checkbox" id="consent_given" name="consent_given" {% if chart.consent_given %}checked{% endif %}>
+                    <label for="consent_given">Consent Given</label>
+                </div>
+                
+                <div class="checkbox-item">
+                    <input type="checkbox" id="anonymize" name="anonymize" {% if chart.anonymize %}checked{% endif %}>
+                    <label for="anonymize">Anonymize Data</label>
+                </div>
+            </div>
+
+            <div style="margin-top: 30px; text-align: center;">
+                <button type="submit" class="btn btn-primary">Update Birth Chart</button>
+                <a href="{{ url_for('view_charts') }}" class="btn btn-secondary" style="margin-left: 10px;">Cancel</a>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        // Category cascading logic
+        const primaryCategorySelect = document.getElementById('primary_category');
+        const subCategorySelect = document.getElementById('sub_category');
+        const specificConditionSelect = document.getElementById('specific_condition');
+        
+        const categoryOptions = {{ category_options|tojson }};
+        
+        function populateSubCategories() {
+            const primaryCategory = primaryCategorySelect.value;
+            subCategorySelect.innerHTML = '<option value="">Select Sub Category</option>';
+            specificConditionSelect.innerHTML = '<option value="">Select Specific Condition</option>';
+            
+            if (primaryCategory && categoryOptions.sub_categories[primaryCategory]) {
+                Object.entries(categoryOptions.sub_categories[primaryCategory]).forEach(([key, value]) => {
+                    const option = document.createElement('option');
+                    option.value = key;
+                    option.textContent = value;
+                    subCategorySelect.appendChild(option);
+                });
+            }
+        }
+        
+        function populateSpecificConditions() {
+            const subCategory = subCategorySelect.value;
+            specificConditionSelect.innerHTML = '<option value="">Select Specific Condition</option>';
+            
+            if (subCategory && categoryOptions.specific_conditions[subCategory]) {
+                Object.entries(categoryOptions.specific_conditions[subCategory]).forEach(([key, value]) => {
+                    const option = document.createElement('option');
+                    option.value = key;
+                    option.textContent = value;
+                    specificConditionSelect.appendChild(option);
+                });
+            }
+        }
+        
+        // Set initial values for edit mode
+        function setInitialValues() {
+            const primaryCategory = '{{ chart.primary_category }}';
+            const subCategory = '{{ chart.sub_category }}';
+            const specificCondition = '{{ chart.specific_condition }}';
+            
+            if (primaryCategory) {
+                populateSubCategories();
+                setTimeout(() => {
+                    if (subCategory) {
+                        subCategorySelect.value = subCategory;
+                        populateSpecificConditions();
+                        setTimeout(() => {
+                            if (specificCondition) {
+                                specificConditionSelect.value = specificCondition;
+                            }
+                        }, 100);
+                    }
+                }, 100);
+            }
+        }
+        
+        // Event listeners
+        primaryCategorySelect.addEventListener('change', populateSubCategories);
+        subCategorySelect.addEventListener('change', populateSpecificConditions);
+        
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', setInitialValues);
+        
+        // Form validation
+        document.getElementById('birthChartForm').addEventListener('submit', function(e) {
+            const name = document.getElementById('name').value.trim();
+            const gender = document.getElementById('gender').value;
+            const dateOfBirth = document.getElementById('date_of_birth').value;
+            const timeOfBirth = document.getElementById('time_of_birth').value;
+            const placeOfBirth = document.getElementById('place_of_birth').value.trim();
+            
+            if (!name || !gender || !dateOfBirth || !timeOfBirth || !placeOfBirth) {
+                e.preventDefault();
+                alert('Please fill in all required fields marked with *');
+                return false;
+            }
+        });
+    </script>
+</body>
+</html> 

@@ -1,0 +1,330 @@
+{% extends "base.html" %}
+
+{% block title %}Birth Chart Details - {{ chart.name }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1><i class="fas fa-star"></i> Birth Chart: {{ chart.name }}</h1>
+            <div>
+                <a href="{{ url_for('edit_birth_chart', chart_id=chart.id) }}" class="btn btn-primary me-2">
+                    <i class="fas fa-edit"></i> Edit Chart
+                </a>
+                <button type="button" class="btn btn-danger me-2" data-bs-toggle="modal" data-bs-target="#deleteModal">
+                    <i class="fas fa-trash"></i> Delete
+                </button>
+                <a href="{{ url_for('view_charts') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Charts
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Personal Information -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-user"></i> Personal Information</h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-borderless">
+                    <tr>
+                        <td><strong>Name:</strong></td>
+                        <td>{{ chart.name }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Gender:</strong></td>
+                        <td>
+                            {% if chart.gender == 'Male' %}
+                                <i class="fas fa-mars text-primary"></i> Male
+                            {% elif chart.gender == 'Female' %}
+                                <i class="fas fa-venus text-danger"></i> Female
+                            {% else %}
+                                <i class="fas fa-genderless text-secondary"></i> Other
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>Date of Birth:</strong></td>
+                        <td>{{ chart.date_of_birth.strftime('%Y-%m-%d') }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Time of Birth:</strong></td>
+                        <td>{{ chart.time_of_birth.strftime('%H:%M') }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Birth Place:</strong></td>
+                        <td>{{ chart.city }}, {{ chart.country }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Research Category:</strong></td>
+                        <td><span class="badge bg-info">{{ chart.research_category }}</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Researcher:</strong></td>
+                        <td>{{ chart.researcher_id }}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-sticky-note"></i> Additional Notes</h5>
+            </div>
+            <div class="card-body">
+                {% if chart.additional_notes %}
+                    <p>{{ chart.additional_notes }}</p>
+                {% else %}
+                    <p class="text-muted">No additional notes provided.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Planetary Positions -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-planet-ringed"></i> Planetary Positions</h5>
+            </div>
+            <div class="card-body">
+                {% if planetary_positions %}
+                    <div class="row">
+                        <!-- Planets -->
+                        <div class="col-md-8">
+                            <h6 class="text-primary mb-3">Planets</h6>
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Planet</th>
+                                            <th>Longitude</th>
+                                            <th>Rasi (Sign)</th>
+                                            <th>Nakshatra</th>
+                                            <th>Nakshatra Lord</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for planet, info in planetary_positions.items() %}
+                                        {% if planet not in ['House_Cusps', 'Ascendant', 'Uranus', 'Neptune', 'Pluto'] %}
+                                        <tr>
+                                            <td>
+                                                <strong>{{ planet }}</strong>
+                                                {% if info.retrograde %}
+                                                    <i class="fas fa-undo text-warning" title="Retrograde"></i>
+                                                {% endif %}
+                                            </td>
+                                            <td>{{ info.longitude }}</td>
+                                            <td>
+                                                <span class="badge bg-secondary">{{ info.rasi }}</span>
+                                            </td>
+                                            <td>{{ info.nakshatra }}</td>
+                                            <td>
+                                                <span class="badge bg-primary">{{ info.nakshatra_lord }}</span>
+                                            </td>
+                                            <td>
+                                                {% if info.retrograde %}
+                                                    <span class="badge bg-warning">Retrograde</span>
+                                                {% else %}
+                                                    <span class="badge bg-success">Direct</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        {% endif %}
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <!-- Ascendant and Houses -->
+                        <div class="col-md-4">
+                            <h6 class="text-primary mb-3">Ascendant & Houses</h6>
+                            {% if planetary_positions.Ascendant %}
+                            <div class="mb-3">
+                                <strong>Ascendant:</strong><br>
+                                <span class="badge bg-info">{{ planetary_positions.Ascendant.longitude }}</span>
+                                <span class="badge bg-secondary">{{ planetary_positions.Ascendant.rasi }}</span>
+                                <span class="badge bg-primary">{{ planetary_positions.Ascendant.nakshatra_lord }}</span>
+                            </div>
+                            {% endif %}
+                            
+                            {% if planetary_positions.House_Cusps %}
+                            <h6 class="text-muted">House Cusps</h6>
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>House</th>
+                                            <th>Sign</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for house in planetary_positions.House_Cusps %}
+                                        <tr>
+                                            <td><strong>{{ house.house }}</strong></td>
+                                            <td><span class="badge bg-secondary">{{ house.rasi }}</span></td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
+                        <h5 class="text-warning">No Planetary Data</h5>
+                        <p class="text-muted">Planetary positions could not be calculated for this birth chart.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Chart Summary -->
+{% if planetary_positions %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-chart-pie"></i> Chart Summary</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="text-primary">Planetary Distribution by Sign</h6>
+                        <div id="signDistribution">
+                            <!-- Will be populated by JavaScript -->
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-primary">Retrograde Planets</h6>
+                        <div id="retrogradePlanets">
+                            <!-- Will be populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Export Options -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-download"></i> Export Options</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        <a href="{{ url_for('export_data', format='csv') }}?chart_id={{ chart.id }}" class="btn btn-outline-success w-100 mb-2">
+                            <i class="fas fa-file-csv"></i> Export as CSV
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="{{ url_for('export_data', format='json') }}?chart_id={{ chart.id }}" class="btn btn-outline-warning w-100 mb-2">
+                            <i class="fas fa-file-code"></i> Export as JSON
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <button onclick="window.print()" class="btn btn-outline-primary w-100 mb-2">
+                            <i class="fas fa-print"></i> Print Chart
+                        </button>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="{{ url_for('view_charts') }}" class="btn btn-outline-secondary w-100 mb-2">
+                            <i class="fas fa-list"></i> View All Charts
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">⚠️ Delete Birth Chart</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete the birth chart for <strong>{{ chart.name }}</strong>?</p>
+                <p class="text-danger"><strong>This action cannot be undone!</strong></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form method="POST" action="{{ url_for('delete_birth_chart', chart_id=chart.id) }}" style="display: inline;">
+                    <button type="submit" class="btn btn-danger">Delete Permanently</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Parse planetary positions for analysis
+    const planetaryPositions = {{ raw_positions | tojson | safe }};
+    
+    if (planetaryPositions && Object.keys(planetaryPositions).length > 0) {
+        // Calculate sign distribution
+        const signCount = {};
+        const retrogradePlanets = [];
+        
+        Object.keys(planetaryPositions).forEach(planet => {
+            if (planet !== 'House_Cusps' && planetaryPositions[planet].rasi) {
+                const sign = planetaryPositions[planet].rasi;
+                signCount[sign] = (signCount[sign] || 0) + 1;
+                
+                if (planetaryPositions[planet].retrograde) {
+                    retrogradePlanets.push(planet);
+                }
+            }
+        });
+        
+        // Display sign distribution
+        const signDiv = document.getElementById('signDistribution');
+        if (signDiv) {
+            let signHtml = '';
+            Object.keys(signCount).forEach(sign => {
+                signHtml += `<span class="badge bg-primary me-2 mb-2">${sign}: ${signCount[sign]}</span>`;
+            });
+            signDiv.innerHTML = signHtml || '<p class="text-muted">No data available</p>';
+        }
+        
+        // Display retrograde planets
+        const retroDiv = document.getElementById('retrogradePlanets');
+        if (retroDiv) {
+            if (retrogradePlanets.length > 0) {
+                let retroHtml = '';
+                retrogradePlanets.forEach(planet => {
+                    retroHtml += `<span class="badge bg-warning me-2 mb-2">${planet}</span>`;
+                });
+                retroDiv.innerHTML = retroHtml;
+            } else {
+                retroDiv.innerHTML = '<p class="text-muted">No retrograde planets</p>';
+            }
+        }
+    }
+});
+</script>
+{% endblock %} 

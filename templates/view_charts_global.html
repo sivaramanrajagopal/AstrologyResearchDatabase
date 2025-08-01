@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Charts - Global Astrology Database</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .charts-container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .chart-card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            background: #fafafa;
+        }
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .chart-title {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #333;
+        }
+        .chart-actions {
+            display: flex;
+            gap: 10px;
+        }
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            text-decoration: none;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        .chart-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        .detail-item {
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            border-left: 3px solid #667eea;
+        }
+        .detail-label {
+            font-weight: bold;
+            color: #666;
+            font-size: 0.9em;
+        }
+        .detail-value {
+            color: #333;
+            margin-top: 5px;
+        }
+        .no-charts {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+        .back-btn {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📊 Birth Charts Database</h1>
+        <p>View all birth charts in the global astrology research database</p>
+    </div>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert" style="margin-bottom: 20px;">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <div class="back-btn">
+        <a href="{{ url_for('index') }}" class="btn btn-secondary">← Back to Home</a>
+    </div>
+
+    <div class="charts-container">
+        {% if charts %}
+            <h2>Total Charts: {{ charts|length }}</h2>
+            
+            {% for chart in charts %}
+            <div class="chart-card">
+                <div class="chart-header">
+                    <div class="chart-title">{{ chart.name or 'Anonymous' }}</div>
+                    <div class="chart-actions">
+                        <a href="{{ url_for('view_chart_details', chart_id=chart.id) }}" class="btn btn-primary">View Details</a>
+                        <a href="{{ url_for('edit_birth_chart', chart_id=chart.id) }}" class="btn btn-secondary">Edit</a>
+                        <form method="POST" action="{{ url_for('delete_birth_chart', chart_id=chart.id) }}" style="display: inline;">
+                            <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this chart?')">Delete</button>
+                        </form>
+                    </div>
+                </div>
+                
+                <div class="chart-details">
+                    <div class="detail-item">
+                        <div class="detail-label">Gender</div>
+                        <div class="detail-value">{{ chart.gender|title }}</div>
+                    </div>
+                    
+                    <div class="detail-item">
+                        <div class="detail-label">Date of Birth</div>
+                        <div class="detail-value">{{ chart.date_of_birth }}</div>
+                    </div>
+                    
+                    <div class="detail-item">
+                        <div class="detail-label">Time of Birth</div>
+                        <div class="detail-value">{{ chart.time_of_birth }}</div>
+                    </div>
+                    
+                    <div class="detail-item">
+                        <div class="detail-label">Place of Birth</div>
+                        <div class="detail-value">{{ chart.place_of_birth }}</div>
+                    </div>
+                    
+                    <div class="detail-item">
+                        <div class="detail-label">Primary Category</div>
+                        <div class="detail-value">{{ chart.primary_category|title if chart.primary_category else 'Not specified' }}</div>
+                    </div>
+                    
+                    <div class="detail-item">
+                        <div class="detail-label">Timezone</div>
+                        <div class="detail-value">{{ chart.timezone_name or 'UTC' }}</div>
+                    </div>
+                    
+                    <div class="detail-item">
+                        <div class="detail-label">Coordinates</div>
+                        <div class="detail-value">{{ "%.4f"|format(chart.latitude) }}, {{ "%.4f"|format(chart.longitude) }}</div>
+                    </div>
+                    
+                    <div class="detail-item">
+                        <div class="detail-label">Created</div>
+                        <div class="detail-value">{{ chart.created_at[:10] if chart.created_at else 'Unknown' }}</div>
+                    </div>
+                </div>
+                
+                {% if chart.description %}
+                <div style="margin-top: 15px; padding: 10px; background: white; border-radius: 5px;">
+                    <div class="detail-label">Description</div>
+                    <div class="detail-value">{{ chart.description }}</div>
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="no-charts">
+                <h3>📭 No Birth Charts Found</h3>
+                <p>No birth charts have been added to the database yet.</p>
+                <a href="{{ url_for('add_birth_chart') }}" class="btn btn-primary">Add Your First Birth Chart</a>
+            </div>
+        {% endif %}
+    </div>
+</body>
+</html> 

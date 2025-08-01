@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Birth Chart Details - Global Astrology Database</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .chart-container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .personal-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .info-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+        .info-label {
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+        .info-value {
+            color: #333;
+        }
+        .planetary-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .planetary-table th {
+            background: #667eea;
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: bold;
+        }
+        .planetary-table td {
+            padding: 12px;
+            border-bottom: 1px solid #e9ecef;
+        }
+        .planetary-table tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+        .planetary-table tr:hover {
+            background: #e3f2fd;
+        }
+        .planet-name {
+            font-weight: bold;
+            color: #333;
+        }
+        .status-direct {
+            color: #28a745;
+            font-weight: bold;
+        }
+        .status-retrograde {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 16px;
+            display: inline-block;
+            margin: 5px;
+        }
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        .section-title {
+            color: #667eea;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 5px;
+            margin-bottom: 20px;
+            font-size: 20px;
+        }
+        .metadata {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        .metadata h4 {
+            color: #1976d2;
+            margin-bottom: 10px;
+        }
+        .metadata-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🔮 Birth Chart Details</h1>
+        <p>Global astrology research with accurate planetary positions</p>
+    </div>
+
+    <div class="chart-container">
+        <h2 class="section-title">Personal Information</h2>
+        <div class="personal-info">
+            <div class="info-item">
+                <div class="info-label">Name</div>
+                <div class="info-value">{{ chart.name }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Gender</div>
+                <div class="info-value">{{ chart.gender|title }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Date of Birth</div>
+                <div class="info-value">{{ chart.date_of_birth }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Time of Birth</div>
+                <div class="info-value">{{ chart.time_of_birth }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Place of Birth</div>
+                <div class="info-value">{{ chart.place_of_birth }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Coordinates</div>
+                <div class="info-value">{{ chart.latitude }}, {{ chart.longitude }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Timezone</div>
+                <div class="info-value">{{ chart.timezone_name }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Primary Category</div>
+                <div class="info-value">{{ chart.primary_category|title if chart.primary_category else 'Not specified' }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Sub Category</div>
+                <div class="info-value">{{ chart.sub_category|title if chart.sub_category else 'Not specified' }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Specific Condition</div>
+                <div class="info-value">{{ chart.specific_condition|title if chart.specific_condition else 'Not specified' }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Outcome</div>
+                <div class="info-value">{{ chart.outcome|title if chart.outcome else 'Unknown' }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Severity</div>
+                <div class="info-value">{{ chart.severity|title if chart.severity else 'Unknown' }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Timing</div>
+                <div class="info-value">{{ chart.timing|title if chart.timing else 'Unknown' }}</div>
+            </div>
+        </div>
+
+        {% if chart.description %}
+        <h3 class="section-title">Description</h3>
+        <div class="info-item">
+            <div class="info-value">{{ chart.description }}</div>
+        </div>
+        {% endif %}
+
+        <h2 class="section-title">Planetary Positions</h2>
+        <table class="planetary-table">
+            <thead>
+                <tr>
+                    <th>Planet</th>
+                    <th>Status</th>
+                    <th>Longitude</th>
+                    <th>Rasi</th>
+                    <th>Rasi Lord</th>
+                    <th>Nakshatra</th>
+                    <th>Nakshatra Lord</th>
+                    <th>Pada</th>
+                    <th>Degrees in Rasi</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="planet-name">☀️ Sun</td>
+                    <td class="{{ 'status-retrograde' if chart.sun_retrograde else 'status-direct' }}">
+                        {{ 'Retrograde' if chart.sun_retrograde else 'Direct' }}
+                    </td>
+                    <td>{{ "%.6f"|format(chart.sun_longitude) }}°</td>
+                    <td>{{ chart.sun_rasi }}</td>
+                    <td>{{ chart.sun_rasi_lord }}</td>
+                    <td>{{ chart.sun_nakshatra }}</td>
+                    <td>{{ chart.sun_nakshatra_lord }}</td>
+                    <td>{{ chart.sun_pada }}</td>
+                    <td>{{ "%.6f"|format(chart.sun_degrees_in_rasi) }}°</td>
+                </tr>
+                <tr>
+                    <td class="planet-name">🌙 Moon</td>
+                    <td class="{{ 'status-retrograde' if chart.moon_retrograde else 'status-direct' }}">
+                        {{ 'Retrograde' if chart.moon_retrograde else 'Direct' }}
+                    </td>
+                    <td>{{ "%.6f"|format(chart.moon_longitude) }}°</td>
+                    <td>{{ chart.moon_rasi }}</td>
+                    <td>{{ chart.moon_rasi_lord }}</td>
+                    <td>{{ chart.moon_nakshatra }}</td>
+                    <td>{{ chart.moon_nakshatra_lord }}</td>
+                    <td>{{ chart.moon_pada }}</td>
+                    <td>{{ "%.6f"|format(chart.moon_degrees_in_rasi) }}°</td>
+                </tr>
+                <tr>
+                    <td class="planet-name">🔴 Mars</td>
+                    <td class="{{ 'status-retrograde' if chart.mars_retrograde else 'status-direct' }}">
+                        {{ 'Retrograde' if chart.mars_retrograde else 'Direct' }}
+                    </td>
+                    <td>{{ "%.6f"|format(chart.mars_longitude) }}°</td>
+                    <td>{{ chart.mars_rasi }}</td>
+                    <td>{{ chart.mars_rasi_lord }}</td>
+                    <td>{{ chart.mars_nakshatra }}</td>
+                    <td>{{ chart.mars_nakshatra_lord }}</td>
+                    <td>{{ chart.mars_pada }}</td>
+                    <td>{{ "%.6f"|format(chart.mars_degrees_in_rasi) }}°</td>
+                </tr>
+                <tr>
+                    <td class="planet-name">🟢 Mercury</td>
+                    <td class="{{ 'status-retrograde' if chart.mercury_retrograde else 'status-direct' }}">
+                        {{ 'Retrograde' if chart.mercury_retrograde else 'Direct' }}
+                    </td>
+                    <td>{{ "%.6f"|format(chart.mercury_longitude) }}°</td>
+                    <td>{{ chart.mercury_rasi }}</td>
+                    <td>{{ chart.mercury_rasi_lord }}</td>
+                    <td>{{ chart.mercury_nakshatra }}</td>
+                    <td>{{ chart.mercury_nakshatra_lord }}</td>
+                    <td>{{ chart.mercury_pada }}</td>
+                    <td>{{ "%.6f"|format(chart.mercury_degrees_in_rasi) }}°</td>
+                </tr>
+                <tr>
+                    <td class="planet-name">🟡 Jupiter</td>
+                    <td class="{{ 'status-retrograde' if chart.jupiter_retrograde else 'status-direct' }}">
+                        {{ 'Retrograde' if chart.jupiter_retrograde else 'Direct' }}
+                    </td>
+                    <td>{{ "%.6f"|format(chart.jupiter_longitude) }}°</td>
+                    <td>{{ chart.jupiter_rasi }}</td>
+                    <td>{{ chart.jupiter_rasi_lord }}</td>
+                    <td>{{ chart.jupiter_nakshatra }}</td>
+                    <td>{{ chart.jupiter_nakshatra_lord }}</td>
+                    <td>{{ chart.jupiter_pada }}</td>
+                    <td>{{ "%.6f"|format(chart.jupiter_degrees_in_rasi) }}°</td>
+                </tr>
+                <tr>
+                    <td class="planet-name">💖 Venus</td>
+                    <td class="{{ 'status-retrograde' if chart.venus_retrograde else 'status-direct' }}">
+                        {{ 'Retrograde' if chart.venus_retrograde else 'Direct' }}
+                    </td>
+                    <td>{{ "%.6f"|format(chart.venus_longitude) }}°</td>
+                    <td>{{ chart.venus_rasi }}</td>
+                    <td>{{ chart.venus_rasi_lord }}</td>
+                    <td>{{ chart.venus_nakshatra }}</td>
+                    <td>{{ chart.venus_nakshatra_lord }}</td>
+                    <td>{{ chart.venus_pada }}</td>
+                    <td>{{ "%.6f"|format(chart.venus_degrees_in_rasi) }}°</td>
+                </tr>
+                <tr>
+                    <td class="planet-name">🪐 Saturn</td>
+                    <td class="{{ 'status-retrograde' if chart.saturn_retrograde else 'status-direct' }}">
+                        {{ 'Retrograde' if chart.saturn_retrograde else 'Direct' }}
+                    </td>
+                    <td>{{ "%.6f"|format(chart.saturn_longitude) }}°</td>
+                    <td>{{ chart.saturn_rasi }}</td>
+                    <td>{{ chart.saturn_rasi_lord }}</td>
+                    <td>{{ chart.saturn_nakshatra }}</td>
+                    <td>{{ chart.saturn_nakshatra_lord }}</td>
+                    <td>{{ chart.saturn_pada }}</td>
+                    <td>{{ "%.6f"|format(chart.saturn_degrees_in_rasi) }}°</td>
+                </tr>
+                <tr>
+                    <td class="planet-name">🌑 Rahu</td>
+                    <td class="{{ 'status-retrograde' if chart.rahu_retrograde else 'status-direct' }}">
+                        {{ 'Retrograde' if chart.rahu_retrograde else 'Direct' }}
+                    </td>
+                    <td>{{ "%.6f"|format(chart.rahu_longitude) }}°</td>
+                    <td>{{ chart.rahu_rasi }}</td>
+                    <td>{{ chart.rahu_rasi_lord }}</td>
+                    <td>{{ chart.rahu_nakshatra }}</td>
+                    <td>{{ chart.rahu_nakshatra_lord }}</td>
+                    <td>{{ chart.rahu_pada }}</td>
+                    <td>{{ "%.6f"|format(chart.rahu_degrees_in_rasi) }}°</td>
+                </tr>
+                <tr>
+                    <td class="planet-name">🌘 Ketu</td>
+                    <td class="{{ 'status-retrograde' if chart.ketu_retrograde else 'status-direct' }}">
+                        {{ 'Retrograde' if chart.ketu_retrograde else 'Direct' }}
+                    </td>
+                    <td>{{ "%.6f"|format(chart.ketu_longitude) }}°</td>
+                    <td>{{ chart.ketu_rasi }}</td>
+                    <td>{{ chart.ketu_rasi_lord }}</td>
+                    <td>{{ chart.ketu_nakshatra }}</td>
+                    <td>{{ chart.ketu_nakshatra_lord }}</td>
+                    <td>{{ chart.ketu_pada }}</td>
+                    <td>{{ "%.6f"|format(chart.ketu_degrees_in_rasi) }}°</td>
+                </tr>
+                <tr>
+                    <td class="planet-name">🏠 Ascendant</td>
+                    <td class="status-direct">Direct</td>
+                    <td>{{ "%.6f"|format(chart.ascendant_longitude) }}°</td>
+                    <td>{{ chart.ascendant_rasi }}</td>
+                    <td>{{ chart.ascendant_rasi_lord }}</td>
+                    <td>{{ chart.ascendant_nakshatra }}</td>
+                    <td>{{ chart.ascendant_nakshatra_lord }}</td>
+                    <td>{{ chart.ascendant_pada }}</td>
+                    <td>{{ "%.6f"|format(chart.ascendant_degrees_in_rasi) }}°</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- Yogas Section -->
+        {% if chart.yogas %}
+        <h2 class="section-title">🧘 Yogas (Planetary Combinations)</h2>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin: 20px 0;">
+            {% for yoga in chart.yogas %}
+            <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; border-left: 4px solid #2196f3;">
+                <h4 style="color: #1976d2; margin-bottom: 10px;">{{ yoga.name }}</h4>
+                <p><strong>Type:</strong> {{ yoga.type }}</p>
+                <p><strong>Planets:</strong> {{ yoga.planets|join(', ') }}</p>
+                <p>{{ yoga.description }}</p>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Shadbala Section -->
+        {% if chart.shadbala %}
+        <h2 class="section-title">⚖️ Shadbala (Six-fold Strength)</h2>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin: 20px 0;">
+            {% for planet, data in chart.shadbala.items() %}
+            <div style="background: #f3e5f5; padding: 15px; border-radius: 8px; border-left: 4px solid #9c27b0;">
+                <h5 style="color: #7b1fa2; margin-bottom: 8px;">{{ planet }}</h5>
+                <p><strong>Total Strength:</strong> {{ data.total_strength }}</p>
+                <p><strong>Status:</strong> 
+                    <span style="color: {% if data.status.lower() == 'strong' %}#4caf50{% elif data.status.lower() == 'moderate' %}#ff9800{% else %}#f44336{% endif %}; font-weight: bold;">
+                        {{ data.status }}
+                    </span>
+                </p>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Aspects Section -->
+        {% if chart.aspects %}
+        <h2 class="section-title">🔗 Planetary Aspects</h2>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px; margin: 20px 0;">
+            {% for aspect in chart.aspects %}
+            <div style="background: #fff3e0; padding: 15px; border-radius: 8px; border-left: 4px solid #ff9800;">
+                <h5 style="color: #f57c00; margin-bottom: 8px;">{{ aspect.type }}</h5>
+                <p><strong>Planets:</strong> {{ aspect.planets|join(' ↔ ') }}</p>
+                <p><strong>Distance:</strong> {{ aspect.distance }}°</p>
+                <p>{{ aspect.description }}</p>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="metadata">
+            <h4>📊 Calculation Metadata</h4>
+            <div class="metadata-grid">
+                <div class="detail-item">
+                    <span class="detail-label">Created:</span>
+                    <span class="detail-value">{{ chart.created_at }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Researcher ID:</span>
+                    <span class="detail-value">{{ chart.researcher_id or 'Not specified' }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Consent Given:</span>
+                    <span class="detail-value">{{ 'Yes' if chart.consent_given else 'No' }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Anonymized:</span>
+                    <span class="detail-value">{{ 'Yes' if chart.anonymize else 'No' }}</span>
+                </div>
+            </div>
+        </div>
+
+        <div style="text-align: center; margin-top: 30px;">
+            <a href="{{ url_for('view_charts') }}" class="btn btn-secondary">← Back to Charts</a>
+            <a href="{{ url_for('add_birth_chart') }}" class="btn btn-primary">➕ Add New Chart</a>
+            <form method="POST" action="{{ url_for('delete_birth_chart', chart_id=chart.id) }}" style="display: inline;">
+                <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this chart?')">🗑️ Delete Chart</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html> 

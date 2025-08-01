@@ -1,0 +1,246 @@
+{% extends "base.html" %}
+
+{% block title %}View Birth Charts - Astrological Birth Chart Database{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1><i class="fas fa-list"></i> View Birth Charts</h1>
+            <a href="{{ url_for('add_birth_chart') }}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Add New Chart
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="fas fa-filter"></i> Filter Charts</h6>
+            </div>
+            <div class="card-body">
+                <form method="GET" class="row g-3">
+                    <div class="col-md-4">
+                        <label for="category" class="form-label">Research Category</label>
+                        <select class="form-select" id="category" name="category">
+                            <option value="">All Categories</option>
+                            {% for category in categories %}
+                            <option value="{{ category }}" {% if category == current_category %}selected{% endif %}>
+                                {{ category }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">&nbsp;</label>
+                        <div>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-search"></i> Filter
+                            </button>
+                            <a href="{{ url_for('view_charts') }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times"></i> Clear
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts List -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h6 class="mb-0">
+                    <i class="fas fa-table"></i> Birth Charts 
+                    {% if current_category %}
+                        - {{ current_category }}
+                    {% endif %}
+                </h6>
+                <div>
+                    <a href="{{ url_for('export_data', format='csv', category=current_category) }}" class="btn btn-sm btn-outline-success">
+                        <i class="fas fa-download"></i> Export CSV
+                    </a>
+                    <a href="{{ url_for('export_data', format='json', category=current_category) }}" class="btn btn-sm btn-outline-warning">
+                        <i class="fas fa-download"></i> Export JSON
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                {% if charts.items %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Name</th>
+                                    <th>Gender</th>
+                                    <th>Date of Birth</th>
+                                    <th>Time</th>
+                                    <th>Location</th>
+                                    <th>Category</th>
+                                    <th>Researcher</th>
+                                    <th>Added</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for chart in charts.items %}
+                                <tr>
+                                    <td><span class="badge bg-secondary">{{ chart.id }}</span></td>
+                                    <td>
+                                        <strong>{{ chart.name }}</strong>
+                                        <br>
+                                        <a href="{{ url_for('view_chart_details', chart_id=chart.id) }}" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-star"></i> View Chart
+                                        </a>
+                                    </td>
+                                    <td>
+                                        {% if chart.gender == 'Male' %}
+                                            <i class="fas fa-mars text-primary"></i> Male
+                                        {% elif chart.gender == 'Female' %}
+                                            <i class="fas fa-venus text-danger"></i> Female
+                                        {% else %}
+                                            <i class="fas fa-genderless text-secondary"></i> Other
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ chart.date_of_birth.strftime('%Y-%m-%d') }}</td>
+                                    <td>{{ chart.time_of_birth.strftime('%H:%M') }}</td>
+                                    <td>
+                                        <small>
+                                            <i class="fas fa-map-marker-alt text-muted"></i>
+                                            {{ chart.city }}, {{ chart.country }}
+                                        </small>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info">{{ chart.research_category }}</span>
+                                    </td>
+                                    <td>
+                                        <small class="text-muted">{{ chart.researcher_id }}</small>
+                                    </td>
+                                    <td>
+                                        <small class="text-muted">
+                                            {{ chart.created_at.strftime('%Y-%m-%d') }}
+                                        </small>
+                                    </td>
+                                </tr>
+                                {% if chart.additional_notes %}
+                                <tr class="table-light">
+                                    <td colspan="9">
+                                        <small class="text-muted">
+                                            <i class="fas fa-sticky-note"></i> <strong>Notes:</strong> {{ chart.additional_notes }}
+                                        </small>
+                                    </td>
+                                </tr>
+                                {% endif %}
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pagination -->
+                    {% if charts.pages > 1 %}
+                    <nav aria-label="Birth charts pagination">
+                        <ul class="pagination justify-content-center">
+                            {% if charts.has_prev %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ url_for('view_charts', page=charts.prev_num, category=current_category) }}">
+                                        <i class="fas fa-chevron-left"></i> Previous
+                                    </a>
+                                </li>
+                            {% endif %}
+                            
+                            {% for page_num in charts.iter_pages() %}
+                                {% if page_num %}
+                                    {% if page_num != charts.page %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="{{ url_for('view_charts', page=page_num, category=current_category) }}">
+                                                {{ page_num }}
+                                            </a>
+                                        </li>
+                                    {% else %}
+                                        <li class="page-item active">
+                                            <span class="page-link">{{ page_num }}</span>
+                                        </li>
+                                    {% endif %}
+                                {% else %}
+                                    <li class="page-item disabled">
+                                        <span class="page-link">...</span>
+                                    </li>
+                                {% endif %}
+                            {% endfor %}
+                            
+                            {% if charts.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ url_for('view_charts', page=charts.next_num, category=current_category) }}">
+                                        Next <i class="fas fa-chevron-right"></i>
+                                    </a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                    {% endif %}
+
+                    <!-- Summary -->
+                    <div class="text-center mt-3">
+                        <small class="text-muted">
+                            Showing {{ charts.items|length }} of {{ charts.total }} charts
+                            {% if current_category %} in category "{{ current_category }}"{% endif %}
+                        </small>
+                    </div>
+
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">No birth charts found</h5>
+                        <p class="text-muted">
+                            {% if current_category %}
+                                No charts found in category "{{ current_category }}".
+                            {% else %}
+                                No birth charts have been added yet.
+                            {% endif %}
+                        </p>
+                        <a href="{{ url_for('add_birth_chart') }}" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> Add Your First Chart
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Stats -->
+{% if charts.items %}
+<div class="row mt-4">
+    <div class="col-md-4">
+        <div class="card bg-light">
+            <div class="card-body text-center">
+                <h6 class="card-title">Total Charts</h6>
+                <h3 class="text-primary">{{ charts.total }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-light">
+            <div class="card-body text-center">
+                <h6 class="card-title">Current Page</h6>
+                <h3 class="text-info">{{ charts.page }} of {{ charts.pages }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-light">
+            <div class="card-body text-center">
+                <h6 class="card-title">Charts per Page</h6>
+                <h3 class="text-success">{{ charts.per_page }}</h3>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %} 

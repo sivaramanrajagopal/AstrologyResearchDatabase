@@ -1,0 +1,216 @@
+{% extends "base.html" %}
+
+{% block title %}Statistics - Astrological Birth Chart Database{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1><i class="fas fa-chart-bar"></i> Research Statistics</h1>
+            <a href="{{ url_for('export_data', format='csv') }}" class="btn btn-success">
+                <i class="fas fa-download"></i> Export All Data
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Overview Cards -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body text-center">
+                <h3 class="card-title">{{ total_charts }}</h3>
+                <p class="card-text">Total Birth Charts</p>
+                <div class="progress bg-white bg-opacity-25">
+                    <div class="progress-bar bg-white" style="width: {{ (total_charts / 400) * 100 }}%"></div>
+                </div>
+                <small class="mt-2 d-block">{{ 400 - total_charts }} remaining to reach 400</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-success text-white">
+            <div class="card-body text-center">
+                <h3 class="card-title">{{ category_stats|length }}</h3>
+                <p class="card-text">Active Categories</p>
+                <i class="fas fa-tags fa-2x"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-info text-white">
+            <div class="card-body text-center">
+                <h3 class="card-title">{{ researcher_stats|length }}</h3>
+                <p class="card-text">Active Researchers</p>
+                <i class="fas fa-users fa-2x"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-warning text-white">
+            <div class="card-body text-center">
+                <h3 class="card-title">
+                    {% if total_charts > 0 %}
+                        {{ "%.1f"|format((total_charts / 400) * 100) }}%
+                    {% else %}
+                        0%
+                    {% endif %}
+                </h3>
+                <p class="card-text">Collection Progress</p>
+                <i class="fas fa-chart-line fa-2x"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Category Distribution -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-chart-pie"></i> Data by Research Category</h5>
+            </div>
+            <div class="card-body">
+                {% if category_stats %}
+                    {% for category, count in category_stats %}
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="fw-bold">{{ category }}</span>
+                        <div class="d-flex align-items-center">
+                            <div class="progress me-2" style="width: 100px; height: 8px;">
+                                <div class="progress-bar bg-primary" style="width: {{ (count / total_charts) * 100 }}%"></div>
+                            </div>
+                            <span class="badge bg-primary">{{ count }}</span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-muted text-center">No data available</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-venus-mars"></i> Gender Distribution</h5>
+            </div>
+            <div class="card-body">
+                {% if gender_stats %}
+                    {% for gender, count in gender_stats %}
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="fw-bold">
+                            {% if gender == 'Male' %}
+                                <i class="fas fa-mars text-primary"></i> Male
+                            {% elif gender == 'Female' %}
+                                <i class="fas fa-venus text-danger"></i> Female
+                            {% else %}
+                                <i class="fas fa-genderless text-secondary"></i> Other
+                            {% endif %}
+                        </span>
+                        <div class="d-flex align-items-center">
+                            <div class="progress me-2" style="width: 100px; height: 8px;">
+                                <div class="progress-bar bg-success" style="width: {{ (count / total_charts) * 100 }}%"></div>
+                            </div>
+                            <span class="badge bg-success">{{ count }}</span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-muted text-center">No data available</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Top Researchers -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-trophy"></i> Top Contributing Researchers</h5>
+            </div>
+            <div class="card-body">
+                {% if researcher_stats %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Rank</th>
+                                    <th>Researcher ID</th>
+                                    <th>Charts Collected</th>
+                                    <th>Percentage</th>
+                                    <th>Progress Bar</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for researcher, count in researcher_stats %}
+                                <tr>
+                                    <td>
+                                        {% if loop.index == 1 %}
+                                            <i class="fas fa-medal text-warning"></i> 1st
+                                        {% elif loop.index == 2 %}
+                                            <i class="fas fa-medal text-secondary"></i> 2nd
+                                        {% elif loop.index == 3 %}
+                                            <i class="fas fa-medal text-bronze"></i> 3rd
+                                        {% else %}
+                                            {{ loop.index }}th
+                                        {% endif %}
+                                    </td>
+                                    <td><strong>{{ researcher }}</strong></td>
+                                    <td>{{ count }}</td>
+                                    <td>{{ "%.1f"|format((count / total_charts) * 100) }}%</td>
+                                    <td>
+                                        <div class="progress" style="height: 8px;">
+                                            <div class="progress-bar bg-info" style="width: {{ (count / total_charts) * 100 }}%"></div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted text-center">No researcher data available</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Export Options -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-download"></i> Export Options</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        <a href="{{ url_for('export_data', format='csv') }}" class="btn btn-outline-success w-100 mb-2">
+                            <i class="fas fa-file-csv"></i> All Data (CSV)
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="{{ url_for('export_data', format='json') }}" class="btn btn-outline-warning w-100 mb-2">
+                            <i class="fas fa-file-code"></i> All Data (JSON)
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="{{ url_for('view_charts') }}" class="btn btn-outline-primary w-100 mb-2">
+                            <i class="fas fa-table"></i> View All Charts
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="{{ url_for('add_birth_chart') }}" class="btn btn-outline-info w-100 mb-2">
+                            <i class="fas fa-plus"></i> Add More Data
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 
