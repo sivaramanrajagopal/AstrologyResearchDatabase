@@ -75,6 +75,8 @@ test_*.py
 debug_*.py
 *_test.py
 
-# Documentation
+# Documentation (allow important docs)
 *.md
-!README.md 
+!README.md
+!DEPLOYMENT_GUIDE.md
+!USER_GUIDE.md 
