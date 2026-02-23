@@ -1,0 +1,152 @@
+<!-- Basic Information -->
+<div class="info-card">
+    <h3>📋 Basic Information</h3>
+    <div class="row">
+        <div class="col-md-6">
+            <p><strong>Name:</strong> {{ chart.name }}</p>
+            <p><strong>Gender:</strong> {{ chart.gender }}</p>
+            <p><strong>Date of Birth:</strong> {{ chart.date_of_birth }}</p>
+            <p><strong>Time of Birth:</strong> {{ chart.time_of_birth }}</p>
+        </div>
+        <div class="col-md-6">
+            <p><strong>Place of Birth:</strong> {{ chart.place_of_birth }}</p>
+            <p><strong>Coordinates:</strong> {{ chart.latitude }}, {{ chart.longitude }}</p>
+            <p><strong>Timezone:</strong> {{ chart.timezone_name }}</p>
+        </div>
+    </div>
+</div>
+
+<!-- Planetary Positions -->
+<div class="info-card mt-4">
+    <h3>🪐 Planetary Positions</h3>
+    <div class="planet-table">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Planet</th>
+                    <th>Longitude</th>
+                    <th>Rasi</th>
+                    <th>Rasi Lord</th>
+                    <th>Nakshatra</th>
+                    <th>Nakshatra Lord</th>
+                    <th>Pada</th>
+                    <th>Degrees in Rasi</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for planet in ['Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn', 'Rahu', 'Ketu', 'Ascendant'] %}
+                    {% set planet_lower = planet.lower() %}
+                    {% if chart[planet_lower + '_longitude'] is not none %}
+                    <tr>
+                        <td><strong class="planet-name">{{ planet }}</strong></td>
+                        <td>{{ "%.2f"|format(chart[planet_lower + '_longitude']) }}°</td>
+                        <td>{{ chart[planet_lower + '_rasi'] }}</td>
+                        <td>{{ chart[planet_lower + '_rasi_lord'] }}</td>
+                        <td>{{ chart[planet_lower + '_nakshatra'] }}</td>
+                        <td>{{ chart[planet_lower + '_nakshatra_lord'] }}</td>
+                        <td>{{ chart[planet_lower + '_pada'] }}</td>
+                        <td>{{ "%.2f"|format(chart[planet_lower + '_degrees_in_rasi']) }}°</td>
+                        <td>
+                            {% if chart[planet_lower + '_retrograde'] %}
+                                <span class="retrograde">Retrograde</span>
+                            {% else %}
+                                <span style="color: #4caf50;">Direct</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endif %}
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- House Positions -->
+<div class="info-card mt-4">
+    <h3>🏠 House Positions</h3>
+    <div class="house-table">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>House</th>
+                    <th>Longitude</th>
+                    <th>Rasi</th>
+                    <th>Degrees in Rasi</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for i in range(1, 13) %}
+                    {% if chart['house_' + i|string + '_longitude'] is not none %}
+                    <tr>
+                        <td><strong>{{ i }}th House</strong></td>
+                        <td>{{ "%.2f"|format(chart['house_' + i|string + '_longitude']) }}°</td>
+                        <td>{{ chart['house_' + i|string + '_rasi'] }}</td>
+                        <td>{{ "%.2f"|format(chart['house_' + i|string + '_degrees']) }}°</td>
+                    </tr>
+                    {% endif %}
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Research Categories -->
+{% if chart.primary_category or chart.sub_category or chart.specific_condition %}
+<div class="info-card mt-4">
+    <h3>📊 Research Categories</h3>
+    <div class="row">
+        <div class="col-md-4">
+            <p><strong>Primary Category:</strong> {{ chart.primary_category or 'Not specified' }}</p>
+        </div>
+        <div class="col-md-4">
+            <p><strong>Sub Category:</strong> {{ chart.sub_category or 'Not specified' }}</p>
+        </div>
+        <div class="col-md-4">
+            <p><strong>Specific Condition:</strong> {{ chart.specific_condition or 'Not specified' }}</p>
+        </div>
+    </div>
+    {% if chart.description %}
+    <div class="row mt-2">
+        <div class="col-12">
+            <p><strong>Description:</strong> {{ chart.description }}</p>
+        </div>
+    </div>
+    {% endif %}
+    <div class="row mt-2">
+        <div class="col-md-3">
+            <p><strong>Outcome:</strong> {{ chart.outcome or 'Unknown' }}</p>
+        </div>
+        <div class="col-md-3">
+            <p><strong>Severity:</strong> {{ chart.severity or 'Unknown' }}</p>
+        </div>
+        <div class="col-md-3">
+            <p><strong>Timing:</strong> {{ chart.timing or 'Unknown' }}</p>
+        </div>
+        <div class="col-md-3">
+            <p><strong>Researcher ID:</strong> {{ chart.researcher_id or 'Not specified' }}</p>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Travel Information -->
+{% if chart.travel_country or chart.travel_city %}
+<div class="info-card mt-4">
+    <h3>✈️ Travel Information</h3>
+    <div class="row">
+        <div class="col-md-3">
+            <p><strong>Country:</strong> {{ chart.travel_country or 'Not specified' }}</p>
+        </div>
+        <div class="col-md-3">
+            <p><strong>City:</strong> {{ chart.travel_city or 'Not specified' }}</p>
+        </div>
+        <div class="col-md-3">
+            <p><strong>Purpose:</strong> {{ chart.travel_purpose or 'Not specified' }}</p>
+        </div>
+        <div class="col-md-3">
+            <p><strong>Outcome:</strong> {{ chart.travel_outcome or 'Not specified' }}</p>
+        </div>
+    </div>
+</div>
+{% endif %}

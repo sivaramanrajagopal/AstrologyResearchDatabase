@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ chart.name }} - Birth Chart Analysis</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px 0;
+        }
+
+        .main-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .nav-tabs {
+            border-bottom: 3px solid #667eea;
+            background: #f8f9fa;
+            padding: 10px 20px 0;
+        }
+
+        .nav-tabs .nav-link {
+            color: #667eea;
+            font-weight: 600;
+            font-size: 1.1em;
+            border: none;
+            padding: 12px 24px;
+            margin-right: 5px;
+            border-radius: 10px 10px 0 0;
+            transition: all 0.3s;
+        }
+
+        .nav-tabs .nav-link:hover {
+            background: #e9ecef;
+            color: #764ba2;
+        }
+
+        .nav-tabs .nav-link.active {
+            background: white;
+            color: #667eea;
+            border-bottom: 3px solid #667eea;
+        }
+
+        .tab-content {
+            padding: 30px;
+        }
+
+        .info-card {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .info-card h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .planet-table, .house-table, .dasha-table {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        table {
+            width: 100%;
+            margin-bottom: 0;
+        }
+
+        thead {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        th {
+            padding: 12px;
+            font-weight: 600;
+        }
+
+        td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        tbody tr:hover {
+            background: #f5f7fa;
+        }
+
+        .current-row {
+            background: #ffecd2 !important;
+            font-weight: bold;
+        }
+
+        .marker {
+            color: #d63031;
+            font-weight: bold;
+            margin-right: 5px;
+        }
+
+        .planet-name {
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .retrograde {
+            color: #f44336;
+            font-weight: bold;
+        }
+
+        .current-dasha-box {
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+        }
+
+        .current-dasha-box h3 {
+            color: #d63031;
+            margin-bottom: 15px;
+        }
+
+        .dasha-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .dasha-item {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .dasha-item .label {
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .dasha-item .value {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #d63031;
+        }
+
+        .action-buttons {
+            text-align: center;
+            padding: 20px;
+            background: #f8f9fa;
+            border-top: 2px solid #e0e0e0;
+        }
+
+        .btn-custom {
+            padding: 10px 20px;
+            margin: 0 5px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .loading-spinner {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .spinner-border {
+            width: 3rem;
+            height: 3rem;
+            border-width: 0.3em;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <div class="header">
+            <h1>🔮 {{ chart.name }}</h1>
+            <p>{{ chart.date_of_birth }} | {{ chart.time_of_birth }} | {{ chart.place_of_birth }}</p>
+        </div>
+
+        <ul class="nav nav-tabs" id="chartTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="details-tab" data-bs-toggle="tab" data-bs-target="#details" type="button" role="tab">
+                    📋 Chart Details
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="dasha-tab" data-bs-toggle="tab" data-bs-target="#dasha" type="button" role="tab" onclick="loadDasha()">
+                    🌙 Dasha Analysis
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="career-tab" data-bs-toggle="tab" data-bs-target="#career" type="button" role="tab" onclick="loadCareer()">
+                    💼 Career Prediction
+                </button>
+            </li>
+        </ul>
+
+        <div class="tab-content" id="chartTabContent">
+            <!-- CHART DETAILS TAB -->
+            <div class="tab-pane fade show active" id="details" role="tabpanel">
+                {% include 'partials/_chart_details.html' %}
+            </div>
+
+            <!-- DASHA TAB -->
+            <div class="tab-pane fade" id="dasha" role="tabpanel">
+                <div id="dasha-content">
+                    <div class="loading-spinner">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mt-3">Calculating Vimshottari Dasha...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CAREER TAB -->
+            <div class="tab-pane fade" id="career" role="tabpanel">
+                <div id="career-content">
+                    <div class="loading-spinner">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mt-3">Analyzing career with 27 Parasara rules...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="action-buttons">
+            <a href="{{ url_for('view_charts') }}" class="btn btn-secondary btn-custom">← Back to Charts</a>
+            <a href="{{ url_for('add_birth_chart') }}" class="btn btn-primary btn-custom">➕ Add New Chart</a>
+            <a href="{{ url_for('edit_birth_chart', chart_id=chart.id) }}" class="btn btn-warning btn-custom">✏️ Edit Chart</a>
+            <form method="POST" action="{{ url_for('delete_birth_chart', chart_id=chart.id) }}" style="display: inline;">
+                <button type="submit" class="btn btn-danger btn-custom" onclick="return confirm('Are you sure?')">🗑️ Delete</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let dashaLoaded = false;
+        let careerLoaded = false;
+
+        function loadDasha() {
+            if (dashaLoaded) return;
+
+            fetch('/dasha/{{ chart.id }}/content')
+                .then(response => response.text())
+                .then(html => {
+                    document.getElementById('dasha-content').innerHTML = html;
+                    dashaLoaded = true;
+                })
+                .catch(error => {
+                    document.getElementById('dasha-content').innerHTML =
+                        '<div class="alert alert-danger">Error loading Dasha data: ' + error + '</div>';
+                });
+        }
+
+        function loadCareer() {
+            if (careerLoaded) return;
+
+            fetch('/predict/{{ chart.id }}/content')
+                .then(response => response.text())
+                .then(html => {
+                    document.getElementById('career-content').innerHTML = html;
+                    careerLoaded = true;
+                })
+                .catch(error => {
+                    document.getElementById('career-content').innerHTML =
+                        '<div class="alert alert-danger">Error loading Career data: ' + error + '</div>';
+                });
+        }
+    </script>
+</body>
+</html>

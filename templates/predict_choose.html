@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Career Prediction – Choose Chart</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; background-color: #f5f5f5; }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 24px;
+        }
+        .card {
+            background: white;
+            padding: 24px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .form-group { margin-bottom: 16px; }
+        label { display: block; font-weight: bold; color: #333; margin-bottom: 6px; }
+        select, input[type="number"] {
+            width: 100%;
+            max-width: 320px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 16px;
+        }
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 14px;
+        }
+        .btn-primary { background: #667eea; color: white; }
+        .btn-secondary { background: #6c757d; color: white; }
+        .btn:hover { opacity: 0.9; }
+        .back { margin-bottom: 16px; }
+        .hint { color: #666; font-size: 0.9em; margin-top: 6px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🔮 Vedic Career Prediction</h1>
+        <p>Select a birth chart to run D1/D10 career analysis</p>
+    </div>
+
+    <div class="back">
+        <a href="{{ url_for('index') }}" class="btn btn-secondary">← Back to Home</a>
+        <a href="{{ url_for('view_charts') }}" class="btn btn-secondary">View Charts</a>
+    </div>
+
+    <div class="card">
+        <form action="#" method="get" id="predict-form">
+            <div class="form-group">
+                <label for="chart_id">Select chart</label>
+                <select name="chart_id" id="chart_id" required>
+                    <option value="">-- Choose a chart --</option>
+                    {% for c in charts %}
+                    <option value="{{ c.id }}">{{ c.name or 'Anonymous' }} (ID {{ c.id }}) – {{ c.date_of_birth }} {{ c.place_of_birth or '' }}</option>
+                    {% endfor %}
+                </select>
+                <p class="hint">Or go directly from View Charts by clicking “Predict career” on a chart.</p>
+            </div>
+            <button type="submit" class="btn btn-primary">Run career prediction</button>
+        </form>
+    </div>
+
+    <script>
+        document.getElementById('predict-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            var id = document.getElementById('chart_id').value;
+            if (!id) return;
+            window.location.href = "{{ url_for('predict_career', chart_id=0) }}".replace('/0', '/' + id);
+        });
+    </script>
+</body>
+</html>

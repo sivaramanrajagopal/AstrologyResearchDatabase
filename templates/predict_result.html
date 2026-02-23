@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Career Prediction – {{ chart.name if chart else 'Chart ' ~ chart_id }}</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 900px; margin: 0 auto; padding: 20px; background-color: #f5f5f5; }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 24px;
+        }
+        .card {
+            background: white;
+            padding: 24px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .error-box { background: #f8d7da; color: #721c24; padding: 16px; border-radius: 8px; margin-bottom: 16px; }
+        .strength { font-size: 1.5em; font-weight: bold; margin: 12px 0; }
+        .strength.high { color: #198754; }
+        .strength.medium { color: #fd7e14; }
+        .strength.low { color: #dc3545; }
+        ul.factors { margin: 12px 0; padding-left: 24px; }
+        .scores-table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+        .scores-table th, .scores-table td { padding: 8px 12px; text-align: left; border-bottom: 1px solid #eee; }
+        .scores-table th { background: #f8f9fa; color: #333; }
+        .rules-table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+        .rules-table th, .rules-table td { padding: 12px 16px; text-align: left; border-bottom: 1px solid #e0e0e0; vertical-align: top; }
+        .rules-table th { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; font-weight: 600; }
+        .rules-table tbody tr:nth-child(even) { background: #f8f9fa; }
+        .rules-table tbody tr:hover { background: #eef0f7; }
+        .rules-table .rule-name { font-weight: 600; color: #333; }
+        .rules-table .rule-explanation { color: #555; font-size: 0.95em; line-height: 1.5; max-width: 52em; }
+        .rules-table .rule-score { font-weight: 500; white-space: nowrap; }
+        .rules-section h2 { margin-bottom: 8px; }
+        .rules-section .section-desc { color: #666; font-size: 0.9em; margin-bottom: 12px; }
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 14px;
+        }
+        .btn-primary { background: #667eea; color: white; }
+        .btn-secondary { background: #6c757d; color: white; }
+        .back { margin-bottom: 16px; }
+        .chart-info { color: #666; font-size: 0.95em; margin-bottom: 16px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🔮 Career Prediction Result</h1>
+        <p>{% if chart %}{{ chart.name }}{% else %}Chart #{{ chart_id }}{% endif %}</p>
+    </div>
+
+    <div class="back">
+        <a href="{{ url_for('predict_choose') }}" class="btn btn-secondary">← Choose another chart</a>
+        <a href="{{ url_for('view_charts') }}" class="btn btn-secondary">View Charts</a>
+        <a href="{{ (career_api_url or 'http://127.0.0.1:8000') }}/charts/interpretation/{{ chart_id }}" class="btn btn-primary" target="_blank" rel="noopener">D1/D9/D10 Interpretation</a>
+        <a href="{{ url_for('index') }}" class="btn btn-secondary">Home</a>
+    </div>
+
+    {% if chart %}
+    <div class="card chart-info">
+        <strong>Birth:</strong> {{ chart.date_of_birth }} {{ chart.time_of_birth }} · {{ chart.place_of_birth or 'N/A' }}
+        {% if chart.description %}<br><strong>Notes:</strong> {{ chart.description }}{% endif %}
+    </div>
+    {% endif %}
+
+    {% if error %}
+    <div class="card">
+        <div class="error-box">
+            <strong>Prediction unavailable</strong><br>{{ error }}
+        </div>
+        <p>Ensure the FastAPI career service is running (e.g. <code>python3 -m uvicorn api.main_api:app --port 8000</code>) and the chart exists.</p>
+    </div>
+    {% else %}
+
+    <!-- Include Profession Probability Summary -->
+    {% if profession_probabilities %}
+        {% include 'partials/_career_summary.html' %}
+    {% endif %}
+
+    <div class="card">
+        <h2>Career strength</h2>
+        <p class="strength {{ (career_strength or '').lower() }}">{{ career_strength or '—' }}</p>
+
+        {% if applied_rules and applied_rules|length > 0 %}
+        <div class="rules-section">
+            <h2>Applied rules</h2>
+            <p class="section-desc">Parasara-based rules used for this prediction, with brief explanations.</p>
+            <table class="rules-table">
+                <thead>
+                    <tr>
+                        <th style="width: 26%;">Rule</th>
+                        <th style="width: 52%;">Explanation</th>
+                        <th style="width: 14%;">Score</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for r in applied_rules %}
+                    <tr>
+                        <td class="rule-name">{{ r.get('name') or r.get('rule_id', '—') }}</td>
+                        <td class="rule-explanation">{{ r.get('explanation') or '—' }}</td>
+                        <td class="rule-score">{{ r.get('score', '—') }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+
+        <!-- Include detailed factor breakdown -->
+        {% if factor_summary %}
+            {% include 'partials/_factor_breakdown.html' %}
+        {% endif %}
+    </div>
+    {% endif %}
+</body>
+</html>

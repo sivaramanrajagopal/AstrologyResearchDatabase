@@ -1,0 +1,19 @@
+# Vedic Career Prediction API – FastAPI
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Swiss Ephemeris: mount ./ephe at run (docker-compose volumes). Build does not copy ephe.
+RUN mkdir -p /app/ephe
+ENV EPHE_PATH=/app/ephe
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY . .
+# Exclude heavy/unneeded dirs if any
+RUN mkdir -p /app/ephe 2>/dev/null || true
+
+EXPOSE 8000
+ENV PORT=8000
+CMD ["uvicorn", "api.main_api:app", "--host", "0.0.0.0", "--port", "8000"]

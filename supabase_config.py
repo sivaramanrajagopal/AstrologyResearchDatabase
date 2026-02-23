@@ -78,6 +78,30 @@ class SupabaseManager:
             print(f"Error deleting birth chart: {e}")
             return False
     
+    def get_charts_created_on_date(self, on_date: datetime) -> List[Dict]:
+        """
+        Get all birth charts created on a given date (UTC).
+        on_date: datetime.date or datetime; only the date part is used.
+        """
+        try:
+            d = on_date.date() if isinstance(on_date, datetime) else on_date
+            start = datetime(d.year, d.month, d.day, 0, 0, 0)
+            end = datetime(d.year, d.month, d.day, 23, 59, 59)
+            start_iso = start.strftime('%Y-%m-%dT%H:%M:%S') + 'Z'
+            end_iso = end.strftime('%Y-%m-%dT%H:%M:%S') + 'Z'
+            result = (
+                self.supabase.table('astrology_charts')
+                .select('*')
+                .gte('created_at', start_iso)
+                .lte('created_at', end_iso)
+                .order('id')
+                .execute()
+            )
+            return result.data or []
+        except Exception as e:
+            print(f"Error getting charts by date: {e}")
+            return []
+
     def get_charts_by_category(self, primary_category: str = None, sub_category: str = None) -> List[Dict]:
         """
         Get charts filtered by category
@@ -121,6 +145,44 @@ class SupabaseManager:
         except Exception as e:
             print(f"Error getting statistics: {e}")
             return {'total_charts': 0, 'category_counts': {}}
+
+    def upsert_career_prediction(
+        self,
+        chart_id: int,
+        career_strength: str,
+        factors: list,
+        scores: dict,
+        d10_snapshot: Optional[Dict] = None,
+        dasha_bukti_snapshot: Optional[Dict] = None,
+        bav_sav_snapshot: Optional[Dict] = None,
+    ) -> Optional[Dict]:
+        """Insert or update career prediction for a chart."""
+        try:
+            row = {
+                'chart_id': chart_id,
+                'career_strength': career_strength,
+                'factors': factors,
+                'scores': scores,
+                'd10_snapshot': d10_snapshot,
+                'dasha_bukti_snapshot': dasha_bukti_snapshot,
+                'bav_sav_snapshot': bav_sav_snapshot,
+            }
+            result = self.supabase.table('career_predictions').upsert(
+                row, on_conflict='chart_id'
+            ).execute()
+            return result.data[0] if result.data else None
+        except Exception as e:
+            print(f"Error upserting career prediction: {e}")
+            return None
+
+    def get_career_prediction(self, chart_id: int) -> Optional[Dict]:
+        """Get latest career prediction for a chart."""
+        try:
+            result = self.supabase.table('career_predictions').select('*').eq('chart_id', chart_id).execute()
+            return result.data[0] if result.data else None
+        except Exception as e:
+            print(f"Error getting career prediction: {e}")
+            return None
 
 # Initialize Supabase manager
 try:

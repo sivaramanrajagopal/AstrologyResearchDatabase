@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>D1 Chart – South Indian Style</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* South Indian D1: 12 houses around center, 5 rows x 3 columns */
+        .south-indian-chart { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; max-width: 380px; margin: 20px auto; border: 2px solid #1a1a1a; padding: 6px; background: #f5f0e6; }
+        .house-box { border: 1px solid #2c3e50; padding: 6px; text-align: center; min-height: 64px; background: #faf8f3; font-size: 11px; position: relative; }
+        .house-box.lagna-box { background: #e8f0f8; }
+        .lagna-slash { position: absolute; top: 0; left: 0; width: 18px; height: 18px; border-left: 2px solid #1a5276; border-top: 2px solid #1a5276; }
+        .house-rasi { font-size: 10px; color: #333; font-weight: 600; margin-top: 2px; }
+        .house-planets { font-size: 10px; color: #333; margin-top: 2px; }
+        .lagna-mark { font-weight: bold; color: #6a1b9a; font-size: 14px; }
+        .retro { color: #c0392b; }
+        .planet-node { color: #c0392b; }
+        .p-sun { color: #c0392b; }
+        .p-moon { color: #1a5276; }
+        .p-mars { color: #c0392b; }
+        .p-mercury { color: #2980b9; }
+        .p-jupiter { color: #16a085; }
+        .p-venus { color: #8e44ad; }
+        .p-saturn { color: #2c3e50; }
+        .p-rahu { color: #c0392b; }
+        .p-ketu { color: #27ae60; }
+        .p-asc { color: #6a1b9a; }
+        .chart-center { border: 1px solid #2c3e50; display: flex; align-items: center; justify-content: center; min-height: 64px; background: #e0e8f0; font-weight: bold; color: #1a5276; font-size: 13px; }
+        .chart-empty { min-height: 64px; background: transparent; }
+        .chart-title { text-align: center; margin-bottom: 16px; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2 class="chart-title">ராசி [D1] – South Indian Style</h2>
+    {% if name %}<p class="text-center text-muted">{{ name }} &ndash; {{ dob }} {{ tob }}</p>{% endif %}
+    <div class="south-indian-chart">
+        {% for cell in houses %}
+        {% if cell.type == 'house' %}
+        <div class="house-box{% if cell.is_lagna %} lagna-box{% endif %}">
+            {% if cell.is_lagna %}<div class="lagna-slash"></div><span class="lagna-mark">ல</span>{% endif %}
+            <div class="house-rasi">{{ cell.rasi }}</div>
+            <div class="house-planets">
+                {% for p in cell.planets %}
+                {% if p.name == 'Sun' %}<span class="p-sun {% if p.retro %}retro{% endif %}">சு</span>
+                {% elif p.name == 'Moon' %}<span class="p-moon {% if p.retro %}retro{% endif %}">சந்</span>
+                {% elif p.name == 'Mars' %}<span class="p-mars {% if p.retro %}retro{% endif %}">செ</span>
+                {% elif p.name == 'Mercury' %}<span class="p-mercury {% if p.retro %}retro{% endif %}">பு</span>
+                {% elif p.name == 'Jupiter' %}<span class="p-jupiter {% if p.retro %}retro{% endif %}">கு</span>
+                {% elif p.name == 'Venus' %}<span class="p-venus {% if p.retro %}retro{% endif %}">வி</span>
+                {% elif p.name == 'Saturn' %}<span class="p-saturn {% if p.retro %}retro{% endif %}">சனி</span>
+                {% elif p.name == 'Rahu' %}<span class="p-rahu">ரா</span>
+                {% elif p.name == 'Ketu' %}<span class="p-ketu">கே</span>
+                {% elif p.name == 'Ascendant' %}<span class="p-asc">ல</span>
+                {% else %}<span class="{% if p.retro %}retro{% endif %}">{{ p.name }}</span>{% endif %}
+                {% if not loop.last %} {% endif %}{% endfor %}
+            </div>
+        </div>
+        {% elif cell.type == 'center' %}
+        <div class="chart-center">{{ cell.title|default('ராசி [D1]') }}</div>
+        {% else %}
+        <div class="chart-empty"></div>
+        {% endif %}
+        {% endfor %}
+    </div>
+    <p class="text-center small text-muted">Lagna: {{ lagna_rasi }} | Rahu/Ketu in red | Retrograde in red</p>
+</div>
+</body>
+</html>

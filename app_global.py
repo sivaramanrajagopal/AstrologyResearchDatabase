@@ -12,11 +12,17 @@ Features:
 # Import environment configuration first
 import environment_config
 
-from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
-from datetime import datetime
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, Response
+from datetime import datetime, timezone
 import os
 import json
+import csv
+import io
+import requests
 from typing import Dict, Optional
+
+# Career prediction API (FastAPI) base URL
+CAREER_API_URL = os.environ.get('CAREER_API_URL', 'http://127.0.0.1:8000')
 
 # Import our modules
 from supabase_config import supabase_manager
@@ -183,6 +189,46 @@ def add_birth_chart():
     return render_template('add_birth_chart_global.html', 
                          category_options=category_options)
 
+@app.route('/export/today')
+def export_today_csv():
+    """Download CSV of all birth charts added today (UTC date)."""
+    if not supabase_manager:
+        flash('Database not configured.', 'error')
+        return redirect(url_for('index'))
+    today = datetime.now(timezone.utc).date()
+    charts = supabase_manager.get_charts_created_on_date(today)
+    basic = ['id', 'name', 'gender', 'date_of_birth', 'time_of_birth', 'place_of_birth',
+             'latitude', 'longitude', 'timezone_name', 'description', 'primary_category', 'sub_category',
+             'outcome', 'severity', 'timing', 'created_at', 'updated_at']
+    planets = ['sun', 'moon', 'mars', 'mercury', 'jupiter', 'venus', 'saturn', 'rahu', 'ketu']
+    planet_cols = []
+    for p in planets:
+        planet_cols.extend([f'{p}_longitude', f'{p}_rasi', f'{p}_rasi_lord', f'{p}_nakshatra', f'{p}_nakshatra_lord', f'{p}_pada', f'{p}_degrees_in_rasi', f'{p}_retrograde'])
+    asc_cols = ['ascendant_longitude', 'ascendant_rasi', 'ascendant_rasi_lord', 'ascendant_nakshatra', 'ascendant_nakshatra_lord', 'ascendant_pada', 'ascendant_degrees_in_rasi']
+    house_cols = []
+    for i in range(1, 13):
+        house_cols.extend([f'house_{i}_longitude', f'house_{i}_rasi', f'house_{i}_degrees'])
+    all_cols = basic + planet_cols + asc_cols + house_cols
+
+    def safe(v):
+        if v is None:
+            return ''
+        if isinstance(v, bool):
+            return 'Y' if v else 'N'
+        if isinstance(v, (dict, list)):
+            return str(v)[:500]
+        return str(v)
+
+    buf = io.StringIO()
+    w = csv.writer(buf)
+    w.writerow(all_cols)
+    for row in charts:
+        w.writerow([safe(row.get(c)) for c in all_cols])
+    buf.seek(0)
+    filename = f'charts_added_{today.isoformat()}.csv'
+    return Response(buf.getvalue(), mimetype='text/csv',
+                    headers={'Content-Disposition': f'attachment; filename="{filename}"'})
+
 @app.route('/view')
 def view_charts():
     """View all birth charts"""
@@ -192,14 +238,14 @@ def view_charts():
         else:
             charts = []
         
-        return render_template('view_charts_global.html', charts=charts)
+        return render_template('view_charts_global.html', charts=charts, career_api_url=CAREER_API_URL.rstrip('/'))
     except Exception as e:
         print(f"Error viewing charts: {e}")
-        return render_template('view_charts_global.html', charts=[])
+        return render_template('view_charts_global.html', charts=[], career_api_url=CAREER_API_URL.rstrip('/'))
 
 @app.route('/chart/<int:chart_id>')
 def view_chart_details(chart_id):
-    """View detailed birth chart with enhanced features"""
+    """View detailed birth chart with tabbed interface (Chart Details / Dasha / Career)"""
     try:
         if supabase_manager:
             chart = supabase_manager.get_birth_chart(chart_id)
@@ -210,20 +256,20 @@ def view_chart_details(chart_id):
                         chart['yogas'] = json.loads(chart['yogas'])
                     except:
                         chart['yogas'] = []
-                
+
                 if chart.get('shadbala'):
                     try:
                         chart['shadbala'] = json.loads(chart['shadbala'])
                     except:
                         chart['shadbala'] = {}
-                
+
                 if chart.get('aspects'):
                     try:
                         chart['aspects'] = json.loads(chart['aspects'])
                     except:
                         chart['aspects'] = []
-                
-                return render_template('chart_details_enhanced.html', chart=chart)
+
+                return render_template('chart_details_tabbed.html', chart=chart)
             else:
                 flash('Birth chart not found.', 'error')
         else:
@@ -231,7 +277,7 @@ def view_chart_details(chart_id):
     except Exception as e:
         print(f"Error viewing chart details: {e}")
         flash('Error loading chart details.', 'error')
-    
+
     return redirect(url_for('view_charts'))
 
 @app.route('/edit/<int:chart_id>', methods=['GET', 'POST'])
@@ -410,6 +456,267 @@ def get_categories_api():
         return jsonify(get_category_options())
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+
+@app.route('/predict')
+def predict_choose():
+    """Choose a chart to run career prediction (Vedic D1/D10 rules)."""
+    try:
+        if supabase_manager:
+            charts = supabase_manager.get_all_charts(limit=500)
+        else:
+            charts = []
+        return render_template('predict_choose.html', charts=charts)
+    except Exception as e:
+        print(f"Error in predict_choose: {e}")
+        return render_template('predict_choose.html', charts=[])
+
+
+@app.route('/predict/<int:chart_id>')
+def predict_career(chart_id):
+    """Run career prediction for a chart and show result (calls FastAPI)."""
+    try:
+        resp = requests.post(
+            f'{CAREER_API_URL.rstrip("/")}/career/predict',
+            json={'chart_id': chart_id},
+            timeout=30,
+        )
+        resp.raise_for_status()
+        data = resp.json()
+        chart = None
+        if supabase_manager:
+            chart = supabase_manager.get_birth_chart(chart_id)
+        # Interpret factors and scores
+        from services.factor_interpreter import get_factor_summary
+
+        factor_summary = get_factor_summary(
+            data.get('factors', []),
+            data.get('scores', {})
+        )
+
+        return render_template(
+            'predict_result.html',
+            chart_id=chart_id,
+            chart=chart,
+            career_strength=data.get('career_strength'),
+            factors=data.get('factors', []),
+            scores=data.get('scores', {}),
+            factor_summary=factor_summary,
+            applied_rules=data.get('applied_rules', []),
+            profession_probabilities=data.get('profession_probabilities'),
+            dasha_current=data.get('dasha_current'),
+            career_api_url=CAREER_API_URL.rstrip('/'),
+            error=None,
+        )
+    except requests.exceptions.RequestException as e:
+        err_msg = str(e)
+        if hasattr(e, 'response') and e.response is not None:
+            try:
+                err_msg = e.response.json().get('detail', err_msg)
+            except Exception:
+                err_msg = e.response.text or err_msg
+        chart = None
+        if supabase_manager:
+            chart = supabase_manager.get_birth_chart(chart_id)
+        return render_template(
+            'predict_result.html',
+            chart_id=chart_id,
+            chart=chart,
+            career_strength=None,
+            factors=[],
+            scores={},
+            applied_rules=[],
+            dasha_current=None,
+            career_api_url=CAREER_API_URL.rstrip('/'),
+            error=err_msg,
+        ), (e.response.status_code if hasattr(e, 'response') and e.response is not None else 502)
+
+
+@app.route('/dasha/<int:chart_id>')
+def view_dasha(chart_id):
+    """View Vimshottari Dasha calculations for a chart"""
+    try:
+        # Get chart data
+        chart = None
+        if supabase_manager:
+            chart = supabase_manager.get_birth_chart(chart_id)
+
+        if not chart:
+            flash('Birth chart not found.', 'error')
+            return redirect(url_for('view_charts'))
+
+        # Import Dasha calculator
+        from services.dasha_calculator import generate_dasa_table, get_current_dasa_bhukti, generate_dasa_bhukti_table
+        from datetime import datetime
+        import swisseph as swe
+
+        # Set sidereal mode
+        swe.set_sid_mode(swe.SIDM_LAHIRI)
+
+        # Parse birth data
+        dob_str = chart.get('date_of_birth')
+        tob_str = chart.get('time_of_birth')
+
+        dob = datetime.strptime(dob_str, '%Y-%m-%d').date()
+        try:
+            tob = datetime.strptime(tob_str, '%H:%M').time()
+        except:
+            tob = datetime.strptime(tob_str, '%H:%M:%S').time()
+
+        # Calculate Julian Day
+        dt = datetime.combine(dob, tob)
+        jd = swe.julday(dt.year, dt.month, dt.day, dt.hour + dt.minute/60.0)
+
+        # Get Moon longitude
+        moon_lon = chart.get('moon_longitude')
+        if not moon_lon:
+            flash('Moon longitude not available for Dasha calculation.', 'error')
+            return redirect(url_for('view_chart_details', chart_id=chart_id))
+
+        # Calculate Dasha periods
+        birth_nakshatra, birth_pada, dasa_table = generate_dasa_table(jd, moon_lon, total_years=120)
+
+        # Get current Dasha/Bhukti
+        current_info = get_current_dasa_bhukti(jd, moon_lon)
+
+        # Calculate Bhukti table
+        _, _, bhukti_table = generate_dasa_bhukti_table(jd, moon_lon)
+
+        # Filter for current mahadasha bhuktis
+        current_dasa_bhuktis = [b for b in bhukti_table if b['maha_dasa'] == current_info['current_dasa']]
+
+        return render_template(
+            'dasha_view.html',
+            chart=chart,
+            birth_nakshatra=birth_nakshatra,
+            birth_pada=birth_pada,
+            current_info=current_info,
+            dasa_table=dasa_table[:20],  # First 20 periods
+            current_dasa_bhuktis=current_dasa_bhuktis,
+        )
+
+    except Exception as e:
+        print(f"Error calculating Dasha: {e}")
+        import traceback
+        traceback.print_exc()
+        flash(f'Error calculating Dasha: {str(e)}', 'error')
+        return redirect(url_for('view_chart_details', chart_id=chart_id))
+
+
+@app.route('/dasha/<int:chart_id>/content')
+def view_dasha_content(chart_id):
+    """Return only Dasha content for AJAX loading (no header/footer)"""
+    try:
+        # Get chart data
+        chart = None
+        if supabase_manager:
+            chart = supabase_manager.get_birth_chart(chart_id)
+
+        if not chart:
+            return '<div class="alert alert-danger">Birth chart not found.</div>', 404
+
+        # Import Dasha calculator
+        from services.dasha_calculator import generate_dasa_table, get_current_dasa_bhukti, generate_dasa_bhukti_table
+        from datetime import datetime
+        import swisseph as swe
+
+        # Set sidereal mode
+        swe.set_sid_mode(swe.SIDM_LAHIRI)
+
+        # Parse birth data
+        dob_str = chart.get('date_of_birth')
+        tob_str = chart.get('time_of_birth')
+
+        dob = datetime.strptime(dob_str, '%Y-%m-%d').date()
+        try:
+            tob = datetime.strptime(tob_str, '%H:%M').time()
+        except:
+            tob = datetime.strptime(tob_str, '%H:%M:%S').time()
+
+        # Calculate Julian Day
+        dt = datetime.combine(dob, tob)
+        jd = swe.julday(dt.year, dt.month, dt.day, dt.hour + dt.minute/60.0)
+
+        # Get Moon longitude
+        moon_lon = chart.get('moon_longitude')
+        if not moon_lon:
+            return '<div class="alert alert-danger">Moon longitude not available for Dasha calculation.</div>', 400
+
+        # Calculate Dasha periods
+        birth_nakshatra, birth_pada, dasa_table = generate_dasa_table(jd, moon_lon, total_years=120)
+
+        # Get current Dasha/Bhukti
+        current_info = get_current_dasa_bhukti(jd, moon_lon)
+
+        # Calculate Bhukti table
+        _, _, bhukti_table = generate_dasa_bhukti_table(jd, moon_lon)
+
+        # Filter for current mahadasha bhuktis
+        current_dasa_bhuktis = [b for b in bhukti_table if b['maha_dasa'] == current_info['current_dasa']]
+
+        return render_template(
+            'partials/_dasha_content.html',
+            chart=chart,
+            birth_nakshatra=birth_nakshatra,
+            birth_pada=birth_pada,
+            current_info=current_info,
+            dasa_table=dasa_table[:20],  # First 20 periods
+            current_dasa_bhuktis=current_dasa_bhuktis,
+        )
+
+    except Exception as e:
+        print(f"Error calculating Dasha content: {e}")
+        import traceback
+        traceback.print_exc()
+        return f'<div class="alert alert-danger">Error loading Dasha data: {str(e)}</div>', 500
+
+
+@app.route('/predict/<int:chart_id>/content')
+def predict_career_content(chart_id):
+    """Return only career prediction content for AJAX loading (no header/footer)"""
+    try:
+        resp = requests.post(
+            f'{CAREER_API_URL.rstrip("/")}/career/predict',
+            json={'chart_id': chart_id},
+            timeout=30,
+        )
+        resp.raise_for_status()
+        data = resp.json()
+
+        chart = None
+        if supabase_manager:
+            chart = supabase_manager.get_birth_chart(chart_id)
+
+        # Interpret factors and scores for better display
+        from services.factor_interpreter import get_factor_summary
+
+        factor_summary = get_factor_summary(
+            data.get('factors', []),
+            data.get('scores', {})
+        )
+
+        # Return just the career content section
+        return render_template(
+            'partials/_career_content.html',
+            chart_id=chart_id,
+            chart=chart,
+            career_strength=data.get('career_strength'),
+            factors=data.get('factors', []),
+            scores=data.get('scores', {}),
+            factor_summary=factor_summary,
+            applied_rules=data.get('applied_rules', []),
+            profession_probabilities=data.get('profession_probabilities'),
+            dasha_current=data.get('dasha_current'),
+            career_api_url=CAREER_API_URL.rstrip('/'),
+            error=None,
+        )
+
+    except Exception as e:
+        print(f"Error getting career prediction content: {e}")
+        import traceback
+        traceback.print_exc()
+        return f'<div class="alert alert-danger">Error loading career prediction: {str(e)}</div>', 500
+
 
 def extract_planetary_data(planetary_positions: Dict) -> Dict:
     """

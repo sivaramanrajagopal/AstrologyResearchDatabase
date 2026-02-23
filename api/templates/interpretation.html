@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chart Interpretation – D1, D9, D10</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { font-family: Arial, sans-serif; background: #f5f5f5; padding: 20px; }
+        .chart-section { margin-bottom: 32px; }
+        .chart-title { text-align: center; font-weight: bold; margin-bottom: 12px; color: #1a5276; }
+        /* South Indian: 12 houses around 2x2 center, 4 rows x 4 columns (D1, D9, D10) */
+        .south-indian-chart { display: grid; grid-template-columns: repeat(4, 1fr); gap: 2px; max-width: 480px; margin: 0 auto 8px; border: 2px solid #1a1a1a; padding: 6px; background: #f5f0e6; }
+        .house-box { border: 1px solid #2c3e50; padding: 6px; text-align: center; min-height: 64px; background: #faf8f3; font-size: 11px; position: relative; }
+        .house-box.lagna-box { background: #e8f0f8; }
+        .lagna-slash { position: absolute; top: 0; left: 0; width: 18px; height: 18px; border-left: 2px solid #1a5276; border-top: 2px solid #1a5276; }
+        .house-rasi { font-size: 10px; color: #333; font-weight: 600; margin-top: 2px; }
+        .house-planets { font-size: 11px; margin-top: 2px; line-height: 1.4; }
+        .lagna-mark { font-weight: bold; color: #6a1b9a; font-size: 14px; }
+        .retro { color: #c0392b; }
+        .planet-node { color: #c0392b; }
+        .p-sun { color: #c0392b; }
+        .p-moon { color: #1a5276; }
+        .p-mars { color: #c0392b; }
+        .p-mercury { color: #2980b9; }
+        .p-jupiter { color: #16a085; }
+        .p-venus { color: #8e44ad; }
+        .p-saturn { color: #2c3e50; }
+        .p-rahu { color: #c0392b; }
+        .p-ketu { color: #27ae60; }
+        .p-asc { color: #6a1b9a; }
+        .chart-center { border: 1px solid #2c3e50; display: flex; align-items: center; justify-content: center; min-height: 64px; background: #e0e8f0; font-weight: bold; color: #1a5276; font-size: 13px; grid-column: span 2; grid-row: span 2; }
+        .chart-center-hidden { display: none; }
+        .chart-empty { min-height: 64px; background: transparent; }
+        .rules-table { width: 100%; max-width: 1000px; margin: 20px auto; border-collapse: collapse; background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.08); border-radius: 8px; overflow: hidden; }
+        .rules-table th, .rules-table td { padding: 10px 14px; text-align: left; border-bottom: 1px solid #eee; }
+        .rules-table th { background: #1a5276; color: #fff; font-size: 13px; }
+        .rules-table .tick { color: #27ae60; font-weight: bold; text-align: center; }
+        .rules-table .cross { color: #e74c3c; font-weight: bold; text-align: center; }
+        .rules-table .rule-name { font-weight: 600; color: #2c3e50; }
+        .rules-table .current-value { color: #2980b9; font-weight: 500; }
+        .rules-table .reason { font-size: 12px; color: #7f8c8d; line-height: 1.4; }
+        .rules-table tr:hover { background: #f8f9fa; }
+        .rules-score { font-size: 1.2em; font-weight: bold; margin: 16px 0; color: #1a5276; }
+        .profession-box { background: #e8f4f8; border-left: 4px solid #1a5276; padding: 14px; margin: 16px 0; max-width: 700px; margin-left: auto; margin-right: auto; border-radius: 0 8px 8px 0; }
+        .profession-box h3 { margin-top: 0; color: #1a5276; font-size: 1.1em; }
+        .header-info { text-align: center; margin-bottom: 24px; color: #555; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1 class="text-center">Chart Interpretation</h1>
+    <p class="header-info">{% if name %}{{ name }}{% endif %} {% if dob %}DOB {{ dob }}{% endif %} {% if tob %}{{ tob }}{% endif %} {% if place %} · {{ place }}{% endif %}</p>
+
+    <div class="chart-section">
+        <div class="chart-title">ராசி [D1] – Rashi Chart</div>
+        <div class="south-indian-chart">
+            {% set center_count = namespace(value=0) %}
+            {% for cell in (houses_d1 or []) %}
+            {% if cell.type == 'house' %}
+            <div class="house-box{% if cell.is_lagna %} lagna-box{% endif %}">
+                {% if cell.is_lagna %}<div class="lagna-slash"></div><span class="lagna-mark">ல</span>{% endif %}
+                <div class="house-rasi">{{ cell.rasi|default('') }}</div>
+                <div class="house-planets">
+                    {% for p in (cell.planets or []) %}
+                    {% if p.name == 'Sun' %}<span class="p-sun {% if p.retro %}retro{% endif %}">சூரியன்</span>
+                    {% elif p.name == 'Moon' %}<span class="p-moon {% if p.retro %}retro{% endif %}">சந்திரன்</span>
+                    {% elif p.name == 'Mars' %}<span class="p-mars {% if p.retro %}retro{% endif %}">செவ்வாய்</span>
+                    {% elif p.name == 'Mercury' %}<span class="p-mercury {% if p.retro %}retro{% endif %}">புதன்</span>
+                    {% elif p.name == 'Jupiter' %}<span class="p-jupiter {% if p.retro %}retro{% endif %}">குரு</span>
+                    {% elif p.name == 'Venus' %}<span class="p-venus {% if p.retro %}retro{% endif %}">சுக்ரன்</span>
+                    {% elif p.name == 'Saturn' %}<span class="p-saturn {% if p.retro %}retro{% endif %}">சனி</span>
+                    {% elif p.name == 'Rahu' %}<span class="p-rahu">ராகு</span>
+                    {% elif p.name == 'Ketu' %}<span class="p-ketu">கேது</span>
+                    {% elif p.name == 'Ascendant' %}<span class="p-asc">ல</span>
+                    {% else %}<span class="{% if p.retro %}retro{% endif %}">{{ p.name }}</span>{% endif %}
+                    {% if not loop.last %} {% endif %}{% endfor %}
+                </div>
+            </div>
+            {% elif cell.type == 'center' %}
+                {% if center_count.value == 0 %}
+                <div class="chart-center">{{ cell.title|default('ராசி [D1]') }}</div>
+                {% set center_count.value = center_count.value + 1 %}
+                {% endif %}
+            {% else %}
+            <div class="chart-empty"></div>
+            {% endif %}
+            {% endfor %}
+        </div>
+        <p class="text-center small text-muted">Lagna: {{ lagna_rasi_d1 }}</p>
+    </div>
+
+    <div class="chart-section">
+        <div class="chart-title">நவாம்சம் [D9] – Navamsha</div>
+        <div class="south-indian-chart">
+            {% set center_count = namespace(value=0) %}
+            {% for cell in (houses_d9 or []) %}
+            {% if cell.type == 'house' %}
+            <div class="house-box{% if cell.is_lagna %} lagna-box{% endif %}">
+                {% if cell.is_lagna %}<div class="lagna-slash"></div><span class="lagna-mark">ல</span>{% endif %}
+                <div class="house-rasi">{{ cell.rasi|default('') }}</div>
+                <div class="house-planets">
+                    {% for p in (cell.planets or []) %}
+                    {% if p.name == 'Sun' %}<span class="p-sun {% if p.retro %}retro{% endif %}">சூரியன்</span>
+                    {% elif p.name == 'Moon' %}<span class="p-moon {% if p.retro %}retro{% endif %}">சந்திரன்</span>
+                    {% elif p.name == 'Mars' %}<span class="p-mars {% if p.retro %}retro{% endif %}">செவ்வாய்</span>
+                    {% elif p.name == 'Mercury' %}<span class="p-mercury {% if p.retro %}retro{% endif %}">புதன்</span>
+                    {% elif p.name == 'Jupiter' %}<span class="p-jupiter {% if p.retro %}retro{% endif %}">குரு</span>
+                    {% elif p.name == 'Venus' %}<span class="p-venus {% if p.retro %}retro{% endif %}">சுக்ரன்</span>
+                    {% elif p.name == 'Saturn' %}<span class="p-saturn {% if p.retro %}retro{% endif %}">சனி</span>
+                    {% elif p.name == 'Rahu' %}<span class="p-rahu">ராகு</span>
+                    {% elif p.name == 'Ketu' %}<span class="p-ketu">கேது</span>
+                    {% elif p.name == 'Ascendant' %}<span class="p-asc">ல</span>
+                    {% else %}<span class="{% if p.retro %}retro{% endif %}">{{ p.name }}</span>{% endif %}
+                    {% if not loop.last %} {% endif %}{% endfor %}
+                </div>
+            </div>
+            {% elif cell.type == 'center' %}
+                {% if center_count.value == 0 %}
+                <div class="chart-center">{{ cell.title|default('நவாம்சம் [D9]') }}</div>
+                {% set center_count.value = center_count.value + 1 %}
+                {% endif %}
+            {% else %}
+            <div class="chart-empty"></div>
+            {% endif %}
+            {% endfor %}
+        </div>
+        <p class="text-center small text-muted">Lagna: {{ lagna_rasi_d9 }}</p>
+    </div>
+
+    <div class="chart-section">
+        <div class="chart-title">தசாம்சம் [D10] – Dashamsha</div>
+        <div class="south-indian-chart">
+            {% set center_count = namespace(value=0) %}
+            {% for cell in (houses_d10 or []) %}
+            {% if cell.type == 'house' %}
+            <div class="house-box{% if cell.is_lagna %} lagna-box{% endif %}">
+                {% if cell.is_lagna %}<div class="lagna-slash"></div><span class="lagna-mark">ல</span>{% endif %}
+                <div class="house-rasi">{{ cell.rasi|default('') }}</div>
+                <div class="house-planets">
+                    {% for p in (cell.planets or []) %}
+                    {% if p.name == 'Sun' %}<span class="p-sun {% if p.retro %}retro{% endif %}">சூரியன்</span>
+                    {% elif p.name == 'Moon' %}<span class="p-moon {% if p.retro %}retro{% endif %}">சந்திரன்</span>
+                    {% elif p.name == 'Mars' %}<span class="p-mars {% if p.retro %}retro{% endif %}">செவ்வாய்</span>
+                    {% elif p.name == 'Mercury' %}<span class="p-mercury {% if p.retro %}retro{% endif %}">புதன்</span>
+                    {% elif p.name == 'Jupiter' %}<span class="p-jupiter {% if p.retro %}retro{% endif %}">குரு</span>
+                    {% elif p.name == 'Venus' %}<span class="p-venus {% if p.retro %}retro{% endif %}">சுக்ரன்</span>
+                    {% elif p.name == 'Saturn' %}<span class="p-saturn {% if p.retro %}retro{% endif %}">சனி</span>
+                    {% elif p.name == 'Rahu' %}<span class="p-rahu">ராகு</span>
+                    {% elif p.name == 'Ketu' %}<span class="p-ketu">கேது</span>
+                    {% elif p.name == 'Ascendant' %}<span class="p-asc">ல</span>
+                    {% else %}<span class="{% if p.retro %}retro{% endif %}">{{ p.name }}</span>{% endif %}
+                    {% if not loop.last %} {% endif %}{% endfor %}
+                </div>
+            </div>
+            {% elif cell.type == 'center' %}
+                {% if center_count.value == 0 %}
+                <div class="chart-center">{{ cell.title|default('தசாம்சம் [D10]') }}</div>
+                {% set center_count.value = center_count.value + 1 %}
+                {% endif %}
+            {% else %}
+            <div class="chart-empty"></div>
+            {% endif %}
+            {% endfor %}
+        </div>
+        <p class="text-center small text-muted">Lagna: {{ lagna_rasi_d10 }}</p>
+    </div>
+
+    <div class="chart-section">
+        <h2 class="chart-title">📋 Detailed Rules Analysis for Native</h2>
+        <p class="text-center rules-score">Rules Matched: {{ rules_score }} | Career Strength: <span style="color: {% if career_strength == 'strong' %}#27ae60{% elif career_strength == 'moderate' %}#f39c12{% else %}#e74c3c{% endif %}; font-weight: bold;">{{ career_strength|upper }}</span></p>
+
+        <!-- Chart Summary Box -->
+        <div style="max-width: 1000px; margin: 20px auto; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; border-radius: 10px; color: white; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
+            <h3 style="margin-top: 0; text-align: center; color: #fff;">🌟 Chart Summary</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-top: 15px;">
+                <div style="background: rgba(255,255,255,0.15); padding: 12px; border-radius: 8px; backdrop-filter: blur(10px);">
+                    <div style="font-size: 11px; opacity: 0.9; margin-bottom: 4px;">Lagna (Ascendant)</div>
+                    <div style="font-size: 18px; font-weight: bold;">{{ lagna_rasi_d1 }}</div>
+                </div>
+                {% if chart_summary.tenth_house_rasi %}
+                <div style="background: rgba(255,255,255,0.15); padding: 12px; border-radius: 8px; backdrop-filter: blur(10px);">
+                    <div style="font-size: 11px; opacity: 0.9; margin-bottom: 4px;">10th House (Career)</div>
+                    <div style="font-size: 18px; font-weight: bold;">{{ chart_summary.tenth_house_rasi }}</div>
+                </div>
+                {% endif %}
+                {% if chart_summary.tenth_lord %}
+                <div style="background: rgba(255,255,255,0.15); padding: 12px; border-radius: 8px; backdrop-filter: blur(10px);">
+                    <div style="font-size: 11px; opacity: 0.9; margin-bottom: 4px;">10th Lord</div>
+                    <div style="font-size: 18px; font-weight: bold;">{{ chart_summary.tenth_lord }}</div>
+                    {% if chart_summary.tenth_lord_in_rasi %}
+                    <div style="font-size: 12px; opacity: 0.8; margin-top: 4px;">in {{ chart_summary.tenth_lord_in_rasi }}</div>
+                    {% endif %}
+                </div>
+                {% endif %}
+                {% if chart_summary.planets_in_10th %}
+                <div style="background: rgba(255,255,255,0.15); padding: 12px; border-radius: 8px; backdrop-filter: blur(10px);">
+                    <div style="font-size: 11px; opacity: 0.9; margin-bottom: 4px;">Planets in 10th House</div>
+                    <div style="font-size: 14px; font-weight: bold;">{{ chart_summary.planets_in_10th|join(', ') }}</div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        <!-- Show grouped rules if available, otherwise fall back to flat list -->
+        {% if rules_grouped %}
+            {% for category in rules_grouped %}
+            <div style="max-width: 1000px; margin: 24px auto;">
+                <h3 style="color: #1a5276; font-size: 1.1em; margin-bottom: 12px; padding-left: 8px; border-left: 4px solid #1a5276;">
+                    {{ category.name }}
+                    <span style="font-size: 0.85em; color: #7f8c8d; font-weight: normal;">({{ category.matched_count }}/{{ category.total_count }} matched)</span>
+                </h3>
+                <table class="rules-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 35%;">Rule</th>
+                            <th style="width: 20%;">Current Value</th>
+                            <th style="width: 10%; text-align: center;">Status</th>
+                            <th style="width: 35%;">Explanation</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for r in category.rules %}
+                        <tr>
+                            <td class="rule-name">{{ r.name }}</td>
+                            <td class="current-value">{{ r.current_value|default('—') }}</td>
+                            <td class="{% if r.matched %}tick{% else %}cross{% endif %}">{% if r.matched %}✓ Yes{% else %}✗ No{% endif %}</td>
+                            <td class="reason">{{ r.reason|default('No details available') }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% endfor %}
+        {% else %}
+            <!-- Fallback to flat list -->
+            <table class="rules-table">
+                <thead>
+                    <tr>
+                        <th style="width: 35%;">Rule</th>
+                        <th style="width: 20%;">Current Value</th>
+                        <th style="width: 10%; text-align: center;">Status</th>
+                        <th style="width: 35%;">Explanation</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for r in rules_checklist %}
+                    <tr>
+                        <td class="rule-name">{{ r.name }}</td>
+                        <td class="current-value">{{ r.current_value|default('—') }}</td>
+                        <td class="{% if r.matched %}tick{% else %}cross{% endif %}">{% if r.matched %}✓ Yes{% else %}✗ No{% endif %}</td>
+                        <td class="reason">{{ r.reason|default('No details available') }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+    </div>
+
+    <div class="profession-box">
+        <h3>💼 Suggested Professions (AI-Enhanced Analysis)</h3>
+        <p style="font-size: 0.95em; color: #555; margin-bottom: 12px;">Based on D1, D10 charts, planetary yogas, nakshatras, and Parasara rules:</p>
+
+        {% if profession_probabilities %}
+            <!-- Show profession probabilities with percentages -->
+            <div style="margin-top: 16px;">
+                {% for p in profession_probabilities %}
+                <div style="margin-bottom: 12px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                        <span style="font-weight: 600; color: #2c3e50; font-size: 1.05em;">{{ loop.index }}. {{ p.name }}</span>
+                        <span style="font-weight: bold; color: {% if p.probability >= 90 %}#27ae60{% elif p.probability >= 70 %}#16a085{% elif p.probability >= 50 %}#f39c12{% else %}#7f8c8d{% endif %}; font-size: 1.1em;">{{ p.probability }}%</span>
+                    </div>
+                    <div style="background: #ecf0f1; height: 8px; border-radius: 4px; overflow: hidden;">
+                        <div style="background: {% if p.probability >= 90 %}#27ae60{% elif p.probability >= 70 %}#16a085{% elif p.probability >= 50 %}#f39c12{% else %}#7f8c8d{% endif %}; height: 100%; width: {{ p.probability }}%; transition: width 0.3s ease;"></div>
+                    </div>
+                    {% if p.factors %}
+                    <div style="font-size: 0.85em; color: #7f8c8d; margin-top: 4px; padding-left: 8px;">
+                        Key indicators: {{ p.factors|join(', ') }}
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        {% elif profession_suggestion %}
+            <!-- Fallback to simple list if no probabilities -->
+            <ul class="mb-0 mt-2">
+                {% for p in profession_suggestion %}
+                <li style="margin-bottom: 6px; color: #2c3e50;">{{ p }}</li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="mb-0 text-muted">No profession predictions available. Chart data may be incomplete.</p>
+        {% endif %}
+    </div>
+</div>
+</body>
+</html>

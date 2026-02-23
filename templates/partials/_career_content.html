@@ -1,0 +1,77 @@
+<!-- Include Profession Probability Summary at the top -->
+{% if profession_probabilities %}
+    {% include 'partials/_career_summary.html' %}
+{% endif %}
+
+{% if chart %}
+<div class="info-card mb-4">
+    <h3>📋 Chart Information</h3>
+    <p><strong>Birth:</strong> {{ chart.date_of_birth }} {{ chart.time_of_birth }} · {{ chart.place_of_birth or 'N/A' }}</p>
+    {% if chart.description %}<p><strong>Notes:</strong> {{ chart.description }}</p>{% endif %}
+</div>
+{% endif %}
+
+{% if error %}
+<div class="alert alert-danger">
+    <strong>Prediction unavailable</strong><br>{{ error }}
+    <p class="mt-2">Ensure the FastAPI career service is running and the chart exists.</p>
+</div>
+{% else %}
+<div class="info-card mb-4">
+    <h3>💼 Career Strength</h3>
+    <p class="strength {{ (career_strength or '').lower() }}" style="font-size: 1.8em; font-weight: bold; margin: 12px 0;">
+        {{ career_strength or '—' }}
+    </p>
+</div>
+
+{% if applied_rules and applied_rules|length > 0 %}
+<div class="info-card mb-4">
+    <h3>📜 Applied Parasara Rules</h3>
+    <p style="color: #666; font-size: 0.9em; margin-bottom: 12px;">Parasara-based rules used for this prediction with brief explanations.</p>
+    <div class="dasha-table">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th style="width: 26%;">Rule</th>
+                    <th style="width: 52%;">Explanation</th>
+                    <th style="width: 14%;">Score</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in applied_rules %}
+                <tr>
+                    <td style="font-weight: 600; color: #333;">{{ r.get('name') or r.get('rule_id', '—') }}</td>
+                    <td style="color: #555; font-size: 0.95em; line-height: 1.5;">{{ r.get('explanation') or '—' }}</td>
+                    <td style="font-weight: 500;">{{ r.get('score', '—') }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+<!-- Include detailed factor breakdown -->
+{% if factor_summary %}
+    {% include 'partials/_factor_breakdown.html' %}
+{% endif %}
+
+<div class="info-card">
+    <h3>🔗 Additional Analysis</h3>
+    <p>
+        <a href="{{ (career_api_url or 'http://127.0.0.1:8000') }}/charts/interpretation/{{ chart_id }}"
+           class="btn btn-primary"
+           target="_blank"
+           rel="noopener"
+           style="display: inline-block; padding: 8px 16px; background: #667eea; color: white; text-decoration: none; border-radius: 6px; font-weight: 600;">
+            View D1/D9/D10 Interpretation →
+        </a>
+    </p>
+</div>
+{% endif %}
+
+<style>
+    .strength.high { color: #198754; }
+    .strength.medium { color: #fd7e14; }
+    .strength.low { color: #dc3545; }
+</style>

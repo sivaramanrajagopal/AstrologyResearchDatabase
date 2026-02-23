@@ -1,0 +1,340 @@
+<!-- Factor Breakdown Section -->
+{% if factor_summary %}
+<div class="factor-breakdown-section">
+    <h2 style="color: #667eea; margin-bottom: 20px;">
+        📊 Career Strength Breakdown
+    </h2>
+
+    <!-- Overall Summary Card -->
+    <div class="overall-summary-card">
+        <div class="summary-stat">
+            <div class="stat-label">Total Score</div>
+            <div class="stat-value">{{ factor_summary.total_score }}</div>
+        </div>
+        <div class="summary-stat">
+            <div class="stat-label">Strength</div>
+            <div class="stat-value">{{ factor_summary.percentage }}%</div>
+        </div>
+        <div class="summary-stat">
+            <div class="stat-label">Assessment</div>
+            <div class="stat-value" style="font-size: 1.1em;">{{ factor_summary.overall_assessment }}</div>
+        </div>
+    </div>
+
+    <!-- Interpreted Factors -->
+    {% if factor_summary.factors %}
+    <div class="factors-section mt-4">
+        <h3 style="color: #555; margin-bottom: 15px;">🔍 Active Career Indicators</h3>
+
+        {% for factor in factor_summary.factors %}
+        <div class="factor-card">
+            <div class="factor-header">
+                <div class="factor-title">{{ factor.title }}</div>
+                {% if factor.value %}
+                <div class="factor-value">{{ factor.value }}</div>
+                {% endif %}
+            </div>
+
+            <div class="factor-description">
+                {{ factor.description }}
+            </div>
+
+            {% if factor.interpretation %}
+            <div class="factor-interpretation">
+                <strong>Meaning:</strong> {{ factor.interpretation | replace('\n\n', '<br><br>') | safe }}
+            </div>
+            {% endif %}
+
+            <div class="factor-code-small">
+                <small><code>{{ factor.raw_code }}</code></small>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Score Breakdown -->
+    {% if factor_summary.scores %}
+    <div class="scores-section mt-4">
+        <h3 style="color: #555; margin-bottom: 15px;">📈 Detailed Score Components</h3>
+
+        <div class="scores-grid">
+            {% for score in factor_summary.scores %}
+            <div class="score-card score-{{ score.color }}">
+                <div class="score-header">
+                    <div class="score-name">{{ score.display_name }}</div>
+                    <div class="score-badge badge-{{ score.color }}">
+                        {{ score.strength }}
+                    </div>
+                </div>
+
+                <div class="score-value-display">{{ score.value }}</div>
+
+                <div class="score-explanation">
+                    {{ score.explanation }}
+                </div>
+
+                <!-- Progress bar -->
+                <div class="score-progress-bg">
+                    <div class="score-progress-fill bg-{{ score.color }}"
+                         style="width: {{ (score.value * 100) | round }}%;">
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Interpretation Guide -->
+    <div class="interpretation-guide mt-4">
+        <h4 style="color: #666; font-size: 0.95em; margin-bottom: 10px;">📘 How to Interpret Scores</h4>
+        <div class="guide-grid">
+            <div class="guide-item">
+                <span class="guide-badge badge-success">Excellent</span>
+                <span class="guide-text">0.8 - 1.0 = Very strong indicator</span>
+            </div>
+            <div class="guide-item">
+                <span class="guide-badge badge-primary">Good</span>
+                <span class="guide-text">0.5 - 0.8 = Positive influence</span>
+            </div>
+            <div class="guide-item">
+                <span class="guide-badge badge-warning">Moderate</span>
+                <span class="guide-text">0.3 - 0.5 = Some support</span>
+            </div>
+            <div class="guide-item">
+                <span class="guide-badge badge-info">Present</span>
+                <span class="guide-text">0.0 - 0.3 = Minor factor</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .factor-breakdown-section {
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        padding: 30px;
+        border-radius: 15px;
+        margin-bottom: 30px;
+    }
+
+    .overall-summary-card {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 20px;
+        background: white;
+        padding: 25px;
+        border-radius: 12px;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+    }
+
+    .summary-stat {
+        text-align: center;
+    }
+
+    .stat-label {
+        font-size: 0.85em;
+        color: #777;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 8px;
+    }
+
+    .stat-value {
+        font-size: 2em;
+        font-weight: bold;
+        color: #667eea;
+    }
+
+    .factors-section {
+        background: white;
+        padding: 20px;
+        border-radius: 12px;
+    }
+
+    .factor-card {
+        background: #f8f9fa;
+        border-left: 4px solid #667eea;
+        padding: 15px;
+        margin-bottom: 15px;
+        border-radius: 0 8px 8px 0;
+    }
+
+    .factor-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+
+    .factor-title {
+        font-weight: 600;
+        font-size: 1.1em;
+        color: #333;
+    }
+
+    .factor-value {
+        background: #667eea;
+        color: white;
+        padding: 4px 12px;
+        border-radius: 12px;
+        font-size: 0.9em;
+        font-weight: 500;
+    }
+
+    .factor-description {
+        color: #666;
+        font-size: 0.95em;
+        margin-bottom: 10px;
+        line-height: 1.5;
+    }
+
+    .factor-interpretation {
+        background: #e7f3ff;
+        padding: 10px;
+        border-radius: 6px;
+        font-size: 0.9em;
+        line-height: 1.6;
+        margin-top: 10px;
+    }
+
+    .factor-code-small {
+        margin-top: 8px;
+        opacity: 0.7;
+    }
+
+    .scores-section {
+        background: white;
+        padding: 20px;
+        border-radius: 12px;
+    }
+
+    .scores-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 15px;
+    }
+
+    .score-card {
+        background: white;
+        border: 2px solid #e0e0e0;
+        padding: 15px;
+        border-radius: 10px;
+        transition: transform 0.2s;
+    }
+
+    .score-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .score-card.score-success { border-color: #28a745; }
+    .score-card.score-primary { border-color: #007bff; }
+    .score-card.score-warning { border-color: #ffc107; }
+    .score-card.score-info { border-color: #17a2b8; }
+
+    .score-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+
+    .score-name {
+        font-weight: 600;
+        font-size: 0.95em;
+        color: #333;
+    }
+
+    .score-badge {
+        padding: 3px 10px;
+        border-radius: 12px;
+        font-size: 0.75em;
+        font-weight: 600;
+    }
+
+    .badge-success { background: #d4edda; color: #155724; }
+    .badge-primary { background: #cfe2ff; color: #084298; }
+    .badge-warning { background: #fff3cd; color: #856404; }
+    .badge-info { background: #d1ecf1; color: #0c5460; }
+    .badge-secondary { background: #e2e3e5; color: #383d41; }
+
+    .score-value-display {
+        font-size: 2em;
+        font-weight: bold;
+        color: #667eea;
+        margin: 10px 0;
+    }
+
+    .score-explanation {
+        font-size: 0.85em;
+        color: #666;
+        margin-bottom: 10px;
+        line-height: 1.4;
+    }
+
+    .score-progress-bg {
+        height: 8px;
+        background: #e9ecef;
+        border-radius: 4px;
+        overflow: hidden;
+        margin-top: 10px;
+    }
+
+    .score-progress-fill {
+        height: 100%;
+        transition: width 0.5s ease;
+    }
+
+    .bg-success { background: #28a745; }
+    .bg-primary { background: #007bff; }
+    .bg-warning { background: #ffc107; }
+    .bg-info { background: #17a2b8; }
+    .bg-secondary { background: #6c757d; }
+
+    .interpretation-guide {
+        background: white;
+        padding: 15px;
+        border-radius: 10px;
+    }
+
+    .guide-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 10px;
+    }
+
+    .guide-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .guide-badge {
+        padding: 4px 10px;
+        border-radius: 12px;
+        font-size: 0.75em;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    .guide-text {
+        font-size: 0.85em;
+        color: #666;
+    }
+
+    @media (max-width: 768px) {
+        .overall-summary-card {
+            grid-template-columns: 1fr;
+        }
+
+        .scores-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .guide-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endif %}

@@ -1,0 +1,142 @@
+<!-- Birth Nakshatra Info -->
+<div class="info-grid mb-4">
+    <div class="info-card">
+        <h3>Birth Nakshatra</h3>
+        <div class="value">{{ birth_nakshatra }}</div>
+    </div>
+    <div class="info-card">
+        <h3>Pada</h3>
+        <div class="value">{{ birth_pada }}</div>
+    </div>
+    <div class="info-card">
+        <h3>Current Age</h3>
+        <div class="value">{{ "%.2f"|format(current_info.age) }} years</div>
+    </div>
+</div>
+
+<!-- Current Dasha/Bhukti -->
+<div class="current-dasha-box">
+    <h3>📅 Current Dasha Period ({{ current_info.get('start_date', '') }} to {{ current_info.get('end_date', '') }})</h3>
+    <div class="dasha-grid">
+        <div class="dasha-item">
+            <div class="label">Mahadasha</div>
+            <div class="value">{{ current_info.current_dasa }}</div>
+        </div>
+        <div class="dasha-item">
+            <div class="label">Antardasha (Bhukti)</div>
+            <div class="value">{{ current_info.current_bhukti or 'N/A' }}</div>
+        </div>
+        <div class="dasha-item">
+            <div class="label">Remaining Years</div>
+            <div class="value">{{ "%.2f"|format(current_info.remaining_years) }}</div>
+        </div>
+    </div>
+</div>
+
+<!-- Dasha Sequence Table -->
+<div class="info-card">
+    <h3>📋 Mahadasha Sequence (120 Year Cycle)</h3>
+    <div class="dasha-table">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Planet</th>
+                    <th>Start Age</th>
+                    <th>End Age</th>
+                    <th>Duration (Years)</th>
+                    <th>Start Date</th>
+                    <th>End Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for period in dasa_table %}
+                <tr {% if period.planet == current_info.current_dasa %}class="current-row"{% endif %}>
+                    <td>
+                        {% if period.planet == current_info.current_dasa %}
+                        <span class="marker">➤</span>
+                        {% endif %}
+                        <span class="planet-name">{{ period.planet }}</span>
+                    </td>
+                    <td>{{ "%.2f"|format(period.start_age) }}</td>
+                    <td>{{ "%.2f"|format(period.end_age) }}</td>
+                    <td>{{ "%.2f"|format(period.duration) }}</td>
+                    <td>{{ period.start_date }}</td>
+                    <td>{{ period.end_date }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Current Mahadasha Bhukti Periods -->
+{% if current_dasa_bhuktis %}
+<div class="info-card mt-4">
+    <h3>📊 Bhukti Periods in Current {{ current_info.current_dasa }} Mahadasha</h3>
+    <div class="dasha-table">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Bhukti (Antardasha)</th>
+                    <th>Start Date</th>
+                    <th>End Date</th>
+                    <th>Duration (Years)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for bhukti in current_dasa_bhuktis %}
+                <tr {% if bhukti.bhukti == current_info.current_bhukti %}class="current-row"{% endif %}>
+                    <td>
+                        {% if bhukti.bhukti == current_info.current_bhukti %}
+                        <span class="marker">➤</span>
+                        {% endif %}
+                        <span class="planet-name">{{ bhukti.bhukti }}</span>
+                    </td>
+                    <td>{{ bhukti.start_date }}</td>
+                    <td>{{ bhukti.end_date }}</td>
+                    <td>{{ "%.2f"|format(bhukti.duration) }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+<!-- Interpretation -->
+<div class="info-card mt-4">
+    <h3>ℹ️ Understanding Vimshottari Dasha</h3>
+    <p style="line-height: 1.8; color: #555; margin-bottom: 15px;">
+        The Vimshottari Dasha system is a 120-year planetary period cycle based on your birth Nakshatra.
+        Each planet governs a specific period of your life, influencing events and experiences during that time.
+    </p>
+    <p style="line-height: 1.8; color: #555;">
+        <strong>Current Period:</strong> You are currently in the <strong>{{ current_info.current_dasa }} Mahadasha</strong>
+        (major period) and <strong>{{ current_info.current_bhukti }} Antardasha</strong> (sub-period).
+        This combination influences the themes and events in your life at this time.
+    </p>
+</div>
+
+<style>
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+    }
+    .info-card {
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    .info-card h3 {
+        color: #667eea;
+        margin-bottom: 10px;
+        font-size: 1.1em;
+    }
+    .info-card .value {
+        font-size: 1.5em;
+        font-weight: bold;
+        color: #333;
+    }
+</style>

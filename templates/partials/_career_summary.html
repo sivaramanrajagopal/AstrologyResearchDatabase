@@ -1,0 +1,277 @@
+<!-- Profession Probabilities Summary -->
+{% if profession_probabilities %}
+<div class="profession-summary-box">
+    <h2 style="color: #667eea; margin-bottom: 20px; text-align: center;">
+        🎯 Career Suitability Analysis
+    </h2>
+
+    <!-- Overall Career Strength Indicator -->
+    <div class="strength-indicator mb-4">
+        <div class="strength-label">Overall Career Potential</div>
+        <div class="strength-badge strength-{{ profession_probabilities.strength_color }}">
+            {{ profession_probabilities.career_strength }}
+            <span class="strength-percentage">({{ profession_probabilities.top_probability }}%)</span>
+        </div>
+    </div>
+
+    <!-- Top 5 Professions with Probability Bars -->
+    <div class="professions-grid">
+        <h3 style="color: #555; margin-bottom: 15px;">Top Career Fields (by suitability)</h3>
+
+        {% for prof in profession_probabilities.top_professions %}
+        <div class="profession-item">
+            <div class="profession-header">
+                <div>
+                    <div class="profession-name">{{ prof.name }}</div>
+                    <div class="profession-desc">{{ prof.description }}</div>
+                </div>
+                <span class="profession-percentage">{{ prof.probability }}%</span>
+            </div>
+
+            <!-- Probability Bar -->
+            <div class="probability-bar-bg">
+                <div class="probability-bar-fill"
+                     style="width: {{ prof.probability }}%;
+                            background: {% if prof.probability >= 70 %}#28a745{% elif prof.probability >= 50 %}#17a2b8{% elif prof.probability >= 30 %}#ffc107{% else %}#dc3545{% endif %};">
+                </div>
+            </div>
+
+            <!-- Reasons -->
+            {% if prof.reasons %}
+            <div class="profession-reasons">
+                <small><strong>Key Indicators:</strong></small>
+                <ul>
+                    {% for reason in prof.reasons %}
+                    <li><small>{{ reason }}</small></li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Quick Reference: All Professions -->
+    <div class="all-professions-compact mt-4">
+        <h4 style="color: #666; font-size: 0.95em; margin-bottom: 10px;">All Career Fields at a Glance</h4>
+        <div class="professions-compact-grid">
+            {% for prof in profession_probabilities.all_professions %}
+            <div class="compact-profession-item">
+                <span class="compact-name">{{ prof.name.split('/')[0] }}</span>
+                <span class="compact-prob" style="color: {% if prof.probability >= 50 %}#28a745{% elif prof.probability >= 30 %}#ffc107{% else %}#6c757d{% endif %};">
+                    {{ prof.probability }}%
+                </span>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Interpretation Note -->
+    <div class="interpretation-note">
+        <p><strong>📘 How to interpret:</strong> These percentages represent the astrological suitability for each career field based on planetary positions, 10th house analysis, nakshatra influences, and elemental qualities. Higher percentages indicate stronger natural inclinations and potential for success.</p>
+    </div>
+</div>
+
+<style>
+    .profession-summary-box {
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        padding: 30px;
+        border-radius: 15px;
+        margin-bottom: 30px;
+        box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+    }
+
+    .strength-indicator {
+        text-align: center;
+        background: white;
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+    }
+
+    .strength-label {
+        font-size: 0.9em;
+        color: #666;
+        margin-bottom: 10px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .strength-badge {
+        font-size: 2em;
+        font-weight: bold;
+        padding: 10px 20px;
+        border-radius: 8px;
+        display: inline-block;
+    }
+
+    .strength-badge.strength-success {
+        background: #d4edda;
+        color: #155724;
+    }
+
+    .strength-badge.strength-primary {
+        background: #cfe2ff;
+        color: #084298;
+    }
+
+    .strength-badge.strength-warning {
+        background: #fff3cd;
+        color: #856404;
+    }
+
+    .strength-badge.strength-danger {
+        background: #f8d7da;
+        color: #721c24;
+    }
+
+    .strength-percentage {
+        font-size: 0.7em;
+        opacity: 0.8;
+    }
+
+    .professions-grid {
+        background: white;
+        padding: 20px;
+        border-radius: 12px;
+        margin-top: 20px;
+    }
+
+    .profession-item {
+        margin-bottom: 25px;
+        padding-bottom: 20px;
+        border-bottom: 1px solid #e0e0e0;
+    }
+
+    .profession-item:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+        padding-bottom: 0;
+    }
+
+    .profession-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+    }
+
+    .profession-name {
+        font-weight: 600;
+        font-size: 1.1em;
+        color: #333;
+    }
+
+    .profession-desc {
+        font-size: 0.85em;
+        color: #777;
+        margin-top: 3px;
+        font-style: italic;
+    }
+
+    .profession-percentage {
+        font-size: 1.3em;
+        font-weight: bold;
+        color: #667eea;
+    }
+
+    .probability-bar-bg {
+        height: 25px;
+        background: #e9ecef;
+        border-radius: 12px;
+        overflow: hidden;
+        margin-bottom: 10px;
+    }
+
+    .probability-bar-fill {
+        height: 100%;
+        transition: width 0.5s ease;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        padding-right: 8px;
+        color: white;
+        font-weight: 600;
+        font-size: 0.85em;
+    }
+
+    .profession-reasons {
+        background: #f8f9fa;
+        padding: 10px 15px;
+        border-radius: 8px;
+        margin-top: 10px;
+        border-left: 3px solid #667eea;
+    }
+
+    .profession-reasons ul {
+        margin: 5px 0 0 0;
+        padding-left: 20px;
+    }
+
+    .profession-reasons li {
+        margin: 3px 0;
+        color: #555;
+    }
+
+    .all-professions-compact {
+        background: white;
+        padding: 15px;
+        border-radius: 10px;
+    }
+
+    .professions-compact-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 10px;
+    }
+
+    .compact-profession-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 12px;
+        background: #f8f9fa;
+        border-radius: 6px;
+        font-size: 0.9em;
+    }
+
+    .compact-name {
+        color: #555;
+        font-weight: 500;
+    }
+
+    .compact-prob {
+        font-weight: bold;
+        font-size: 1.1em;
+    }
+
+    .interpretation-note {
+        background: #e7f3ff;
+        border-left: 4px solid #0d6efd;
+        padding: 15px;
+        border-radius: 6px;
+        margin-top: 20px;
+    }
+
+    .interpretation-note p {
+        margin: 0;
+        font-size: 0.9em;
+        line-height: 1.6;
+        color: #333;
+    }
+
+    @media (max-width: 768px) {
+        .professions-compact-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .strength-badge {
+            font-size: 1.5em;
+        }
+
+        .profession-name {
+            font-size: 1em;
+        }
+    }
+</style>
+{% endif %}
