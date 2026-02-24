@@ -224,6 +224,11 @@
                     💼 Career Prediction
                 </button>
             </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="ashtakavarga-tab" data-bs-toggle="tab" data-bs-target="#ashtakavarga" type="button" role="tab" onclick="loadAshtakavarga()">
+                    🔢 Ashtakavarga
+                </button>
+            </li>
         </ul>
 
         <div class="tab-content" id="chartTabContent">
@@ -255,6 +260,18 @@
                     </div>
                 </div>
             </div>
+
+            <!-- ASHTAKAVARGA TAB -->
+            <div class="tab-pane fade" id="ashtakavarga" role="tabpanel">
+                <div id="ashtakavarga-content">
+                    <div class="loading-spinner">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mt-3">Calculating Ashtakavarga (BAV/SAV)...</p>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <div class="action-buttons">
@@ -271,6 +288,7 @@
     <script>
         let dashaLoaded = false;
         let careerLoaded = false;
+        let ashtakavargaLoaded = false;
 
         function loadDasha() {
             if (dashaLoaded) return;
@@ -299,6 +317,21 @@
                 .catch(error => {
                     document.getElementById('career-content').innerHTML =
                         '<div class="alert alert-danger">Error loading Career data: ' + error + '</div>';
+                });
+        }
+
+        function loadAshtakavarga() {
+            if (ashtakavargaLoaded) return;
+
+            fetch('/ashtakavarga/{{ chart.id }}/content')
+                .then(response => response.text())
+                .then(html => {
+                    document.getElementById('ashtakavarga-content').innerHTML = html;
+                    ashtakavargaLoaded = true;
+                })
+                .catch(error => {
+                    document.getElementById('ashtakavarga-content').innerHTML =
+                        '<div class="alert alert-danger">Error loading Ashtakavarga data: ' + error + '</div>';
                 });
         }
     </script>

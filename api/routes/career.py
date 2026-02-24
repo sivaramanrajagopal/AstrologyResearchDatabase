@@ -153,23 +153,26 @@ def career_predict(req: CareerPredictRequest):
             dasha_current = None
     if req.use_bav_sav:
         try:
-            from api.adapters.ashtavargam_client import birth_data_to_ashtavargam_body, bav_sav_full as bav_sav_call
-            if req.chart_id is not None:
-                from supabase_config import supabase_manager
-                row = supabase_manager.get_birth_chart(req.chart_id)
-                body = birth_data_to_ashtavargam_body(
-                    row["date_of_birth"],
-                    row["time_of_birth"][:5] if isinstance(row["time_of_birth"], str) else "12:00",
-                    row["latitude"], row["longitude"],
-                    row.get("timezone_name") or "UTC",
-                )
+            # Use local Ashtakavarga calculator instead of external service
+            from services.ashtakavarga_service import calculate_ashtakavarga_full
+
+            # Calculate Ashtakavarga from D1 chart data
+            ashtakavarga_data = calculate_ashtakavarga_full(d1)
+
+            if ashtakavarga_data:
+                # Transform to format expected by career_rules
+                # career_rules expects: bav_sav_full["sav_chart"] = list of 12 SAV values
+                bav_sav_full = {
+                    "sav_chart": ashtakavarga_data['sav']['chart'],
+                    "sav_total": ashtakavarga_data['sav']['total'],
+                    "bav": ashtakavarga_data['bav'],  # Include full BAV data for future use
+                }
             else:
-                from api.routes.charts import BirthDataRequest, _parse_birth_data as parse_birth2
-                birth_req = BirthDataRequest(dob=req.dob, tob=req.tob, place=req.place, latitude=req.latitude, longitude=req.longitude, timezone_name=req.timezone_name)
-                dob, tot, lat, lon, tz_name = parse_birth2(birth_req)
-                body = birth_data_to_ashtavargam_body(dob.isoformat(), tot.strftime("%H:%M"), lat, lon, tz_name)
-            bav_sav_full = bav_sav_call(body)
-        except Exception:
+                bav_sav_full = None
+        except Exception as e:
+            print(f"Error calculating local Ashtakavarga: {e}")
+            import traceback
+            traceback.print_exc()
             bav_sav_full = None
 
     from services.career_rules import career_rules
@@ -305,14 +308,17 @@ def career_validate():
         except Exception:
             pass
         try:
-            body = birth_data_to_ashtavargam_body(
-                row["date_of_birth"],
-                row["time_of_birth"][:5] if isinstance(row["time_of_birth"], str) else "12:00",
-                row["latitude"], row["longitude"],
-                row.get("timezone_name") or "UTC",
-            )
-            bav_sav_full = bav_sav_call(body)
-        except Exception:
+            # Use local Ashtakavarga calculator
+            from services.ashtakavarga_service import calculate_ashtakavarga_full
+            ashtakavarga_data = calculate_ashtakavarga_full(d1)
+            if ashtakavarga_data:
+                bav_sav_full = {
+                    "sav_chart": ashtakavarga_data['sav']['chart'],
+                    "sav_total": ashtakavarga_data['sav']['total'],
+                    "bav": ashtakavarga_data['bav'],
+                }
+        except Exception as e:
+            print(f"Error calculating Ashtakavarga for validation chart {chart_id}: {e}")
             pass
         result = career_rules(d1, d10, dasha_current=dasha_current, bav_sav_full=bav_sav_full)
         known_profession = (row.get("description") or "").strip()

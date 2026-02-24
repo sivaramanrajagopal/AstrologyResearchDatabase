@@ -1,0 +1,251 @@
+<!-- SAV Summary Card -->
+<div class="info-card mb-4" style="background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);">
+    <h3>🌟 Sarvashtakavarga (SAV) - Combined Strength</h3>
+    <div class="info-grid">
+        <div class="sav-item">
+            <div class="label">Total SAV Points</div>
+            <div class="value">{{ sav_data.total }} / 337</div>
+        </div>
+        <div class="sav-item">
+            <div class="label">10th House (Career)</div>
+            <div class="value {% if sav_data.chart[9] >= 30 %}text-success{% elif sav_data.chart[9] < 25 %}text-danger{% endif %}">
+                {{ sav_data.chart[9] }} points
+                {% if sav_data.chart[9] >= 30 %}
+                    ✅ Strong
+                {% elif sav_data.chart[9] >= 25 %}
+                    ⚠️ Moderate
+                {% else %}
+                    ❌ Weak
+                {% endif %}
+            </div>
+        </div>
+        <div class="sav-item">
+            <div class="label">Average per Rasi</div>
+            <div class="value">{{ "%.1f"|format(sav_data.total / 12) }}</div>
+        </div>
+    </div>
+</div>
+
+<!-- SAV Chart by Rasi -->
+<div class="info-card">
+    <h3>📊 Sarvashtakavarga by Rasi</h3>
+    <div class="ashtakavarga-table">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Rasi</th>
+                    <th>सूर्य<br>Sun</th>
+                    <th>चन्द्र<br>Moon</th>
+                    <th>मंगल<br>Mars</th>
+                    <th>बुध<br>Mercury</th>
+                    <th>गुरु<br>Jupiter</th>
+                    <th>शुक्र<br>Venus</th>
+                    <th>शनि<br>Saturn</th>
+                    <th><strong>SAV Total</strong></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% set rasi_names = ["Mesha", "Rishaba", "Mithuna", "Kataka", "Simha", "Kanni", "Thula", "Vrischika", "Dhanus", "Makara", "Kumbha", "Meena"] %}
+                {% for i in range(12) %}
+                <tr {% if i == 9 %}class="highlight-row"{% endif %}>
+                    <td><strong>{{ i + 1 }}. {{ rasi_names[i] }}</strong></td>
+                    <td>{{ sav_data.by_planet.SUN[i] }}</td>
+                    <td>{{ sav_data.by_planet.MOON[i] }}</td>
+                    <td>{{ sav_data.by_planet.MARS[i] }}</td>
+                    <td>{{ sav_data.by_planet.MERCURY[i] }}</td>
+                    <td>{{ sav_data.by_planet.JUPITER[i] }}</td>
+                    <td>{{ sav_data.by_planet.VENUS[i] }}</td>
+                    <td>{{ sav_data.by_planet.SATURN[i] }}</td>
+                    <td>
+                        <strong
+                            {% if sav_data.chart[i] >= 30 %}class="text-success"
+                            {% elif sav_data.chart[i] < 25 %}class="text-danger"
+                            {% endif %}>
+                            {{ sav_data.chart[i] }}
+                        </strong>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr style="background: #f8f9fa; font-weight: bold;">
+                    <td>Total</td>
+                    <td>{{ bav_data.SUN.total }}</td>
+                    <td>{{ bav_data.MOON.total }}</td>
+                    <td>{{ bav_data.MARS.total }}</td>
+                    <td>{{ bav_data.MERCURY.total }}</td>
+                    <td>{{ bav_data.JUPITER.total }}</td>
+                    <td>{{ bav_data.VENUS.total }}</td>
+                    <td>{{ bav_data.SATURN.total }}</td>
+                    <td><strong>{{ sav_data.total }}</strong></td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+</div>
+
+<!-- BAV Individual Planet Charts -->
+<div class="info-card mt-4">
+    <h3>📋 Binnashtakavarga (BAV) - Individual Planet Strength</h3>
+
+    {% set planets = [
+        ('SUN', 'सूर्य Sun', '☀️'),
+        ('MOON', 'चन्द्र Moon', '🌙'),
+        ('MARS', 'मंगल Mars', '♂️'),
+        ('MERCURY', 'बुध Mercury', '☿️'),
+        ('JUPITER', 'गुरु Jupiter', '♃'),
+        ('VENUS', 'शुक्र Venus', '♀️'),
+        ('SATURN', 'शनि Saturn', '♄')
+    ] %}
+
+    {% for planet_key, planet_name, emoji in planets %}
+    <div class="planet-bav-section mb-4">
+        <h4>{{ emoji }} {{ planet_name }} Binnashtakavarga (Total: {{ bav_data[planet_key].total }})</h4>
+        <div class="bav-chart">
+            <table class="table table-sm">
+                <thead>
+                    <tr>
+                        <th>Rasi</th>
+                        {% for i in range(12) %}
+                        <th>{{ i + 1 }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Points</strong></td>
+                        {% for i in range(12) %}
+                        <td {% if bav_data[planet_key].chart[i] >= 4 %}class="text-success"
+                            {% elif bav_data[planet_key].chart[i] <= 2 %}class="text-danger"
+                            {% endif %}>
+                            <strong>{{ bav_data[planet_key].chart[i] }}</strong>
+                        </td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td><strong>Rasi</strong></td>
+                        {% for rasi_name in rasi_names %}
+                        <td><small>{{ rasi_name[:3] }}</small></td>
+                        {% endfor %}
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Interpretation -->
+<div class="info-card mt-4">
+    <h3>ℹ️ Understanding Ashtakavarga</h3>
+    <p style="line-height: 1.8; color: #555; margin-bottom: 15px;">
+        <strong>Ashtakavarga</strong> is a quantitative system in Vedic astrology that assigns points (bindus) to each house based on planetary positions. It provides an objective measure of strength for different life areas.
+    </p>
+    <p style="line-height: 1.8; color: #555; margin-bottom: 15px;">
+        <strong>Binnashtakavarga (BAV):</strong> Shows individual planet's benefic influence across all 12 houses. Higher points indicate stronger results from that planet in that house.
+    </p>
+    <p style="line-height: 1.8; color: #555; margin-bottom: 15px;">
+        <strong>Sarvashtakavarga (SAV):</strong> Combined strength from all 7 planets. The 10th house SAV is especially important for career success:
+    </p>
+    <ul style="line-height: 1.8; color: #555;">
+        <li><strong>30+ points:</strong> ✅ Excellent career strength - Strong professional success</li>
+        <li><strong>25-29 points:</strong> ⚠️ Moderate career strength - Average professional outcomes</li>
+        <li><strong>Below 25:</strong> ❌ Weak career strength - May face obstacles in profession</li>
+    </ul>
+    <p style="line-height: 1.8; color: #555; margin-top: 15px;">
+        <strong>Your 10th House SAV:</strong>
+        <span style="font-size: 1.2em; font-weight: bold; color:
+            {% if sav_data.chart[9] >= 30 %}#28a745
+            {% elif sav_data.chart[9] >= 25 %}#ffc107
+            {% else %}#dc3545
+            {% endif %};">
+            {{ sav_data.chart[9] }} points
+        </span>
+        {% if sav_data.chart[9] >= 30 %}
+            - Excellent career potential!
+        {% elif sav_data.chart[9] >= 25 %}
+            - Moderate career strength
+        {% else %}
+            - Career may require extra effort
+        {% endif %}
+    </p>
+</div>
+
+<style>
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        margin-top: 15px;
+    }
+
+    .sav-item {
+        background: white;
+        padding: 15px;
+        border-radius: 8px;
+        text-align: center;
+    }
+
+    .sav-item .label {
+        font-size: 0.9em;
+        color: #666;
+        margin-bottom: 8px;
+    }
+
+    .sav-item .value {
+        font-size: 1.5em;
+        font-weight: bold;
+        color: #333;
+    }
+
+    .highlight-row {
+        background: #fff3cd !important;
+        font-weight: bold;
+    }
+
+    .planet-bav-section {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 8px;
+        border-left: 4px solid #667eea;
+    }
+
+    .planet-bav-section h4 {
+        color: #667eea;
+        margin-bottom: 10px;
+        font-size: 1.1em;
+    }
+
+    .bav-chart table {
+        background: white;
+        margin-bottom: 0;
+    }
+
+    .text-success {
+        color: #28a745 !important;
+        font-weight: bold;
+    }
+
+    .text-danger {
+        color: #dc3545 !important;
+    }
+
+    .ashtakavarga-table {
+        overflow-x: auto;
+    }
+
+    .ashtakavarga-table table {
+        font-size: 0.9em;
+    }
+
+    .ashtakavarga-table th {
+        text-align: center;
+        font-size: 0.85em;
+        padding: 8px 4px;
+    }
+
+    .ashtakavarga-table td {
+        text-align: center;
+        padding: 8px 4px;
+    }
+</style>

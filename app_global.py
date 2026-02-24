@@ -718,6 +718,71 @@ def predict_career_content(chart_id):
         return f'<div class="alert alert-danger">Error loading career prediction: {str(e)}</div>', 500
 
 
+@app.route('/ashtakavarga/<int:chart_id>/content')
+def view_ashtakavarga_content(chart_id):
+    """Return Ashtakavarga (BAV/SAV) content for AJAX loading"""
+    try:
+        # Get chart data from Supabase
+        chart = None
+        if supabase_manager:
+            chart = supabase_manager.get_birth_chart(chart_id)
+
+        if not chart:
+            return '<div class="alert alert-danger">Birth chart not found.</div>', 404
+
+        # Calculate planetary positions using enhanced Swiss Ephemeris
+        from enhanced_swiss_ephemeris import calculate_enhanced_planetary_positions
+        from datetime import datetime
+
+        dob_str = chart.get('date_of_birth')
+        tob_str = chart.get('time_of_birth')
+        lat = chart.get('latitude')
+        lon = chart.get('longitude')
+
+        dob = datetime.strptime(dob_str, '%Y-%m-%d').date()
+        try:
+            tob = datetime.strptime(tob_str, '%H:%M').time()
+        except:
+            tob = datetime.strptime(tob_str, '%H:%M:%S').time()
+
+        # Get timezone name from chart or default to IST
+        timezone_name = chart.get('timezone', 'Asia/Kolkata')
+
+        # Calculate enhanced planetary positions
+        d1_positions = calculate_enhanced_planetary_positions(
+            date_of_birth=dob,
+            time_of_birth=tob,
+            latitude=lat,
+            longitude=lon,
+            timezone_name=timezone_name
+        )
+
+        # Calculate Ashtakavarga
+        from services.ashtakavarga_service import calculate_ashtakavarga_full
+
+        ashtakavarga_data = calculate_ashtakavarga_full(d1_positions)
+
+        if not ashtakavarga_data:
+            return '<div class="alert alert-warning">Unable to calculate Ashtakavarga. Planetary positions may be incomplete.</div>', 400
+
+        # Extract BAV and SAV data for template
+        bav_data = ashtakavarga_data.get('bav', {})
+        sav_data = ashtakavarga_data.get('sav', {})
+
+        return render_template(
+            'partials/_ashtakavarga_content.html',
+            chart=chart,
+            bav_data=bav_data,
+            sav_data=sav_data,
+        )
+
+    except Exception as e:
+        print(f"Error calculating Ashtakavarga content: {e}")
+        import traceback
+        traceback.print_exc()
+        return f'<div class="alert alert-danger">Error loading Ashtakavarga data: {str(e)}</div>', 500
+
+
 def extract_planetary_data(planetary_positions: Dict) -> Dict:
     """
     Extract planetary data from Swiss Ephemeris results for Supabase storage

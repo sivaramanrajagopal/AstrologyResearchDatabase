@@ -218,6 +218,89 @@ RULE_META: Dict[str, Dict[str, str]] = {
         "name": "Combust planets in 10th",
         "explanation": "Planets combust (too close to Sun) in 10th house are weakened and may indicate career obstacles or delayed success.",
     },
+    # Phase 1 Enhancements
+    "d10_lagna_strength": {
+        "name": "D10 Lagna (Ascendant) strength",
+        "explanation": "The D10 Ascendant sign and its lord show the native's professional personality and approach to career. Strong placement indicates confidence and capability.",
+    },
+    "d10_lagna_lord_placement": {
+        "name": "D10 Lagna lord placement",
+        "explanation": "D10 Lagna lord in Kendra (1,4,7,10) or Trikona (1,5,9) houses shows strong professional foundation and positive approach to work.",
+    },
+    "d10_10th_lord_placement": {
+        "name": "D10 10th lord placement",
+        "explanation": "The lord of the 10th house in D10 chart shows career actions and professional achievements. Strong placement brings success.",
+    },
+    "big_three_lords": {
+        "name": "Big Three Lords (D10 Lagna + D10 10th + D1 10th)",
+        "explanation": "Combined strength of the three most important career lords: D10 Lagna lord (personality), D10 10th lord (career actions), D1 10th lord (life purpose).",
+    },
+    "artha_trikona": {
+        "name": "Artha Trikona (2nd, 6th, 10th houses)",
+        "explanation": "The wealth triangle houses. Strong 2nd (income), 6th (service), and 10th (career) houses indicate financial success through profession.",
+    },
+    "business_vs_job": {
+        "name": "Business vs. Job indicator",
+        "explanation": "6th house strength (service/job) vs. 7th house strength (business/partnerships). Stronger 7th indicates entrepreneurial path.",
+    },
+    "saturn_in_d10": {
+        "name": "Saturn placement in D10",
+        "explanation": "Saturn's position in D10 shows obstacles, discipline requirements, and delayed but lasting success. Favorable placement in 3,6,10,11 (Upachaya) is beneficial.",
+    },
+    # Phase 2 Enhancements
+    "planetary_career_indicators": {
+        "name": "Planetary Career Type Indicators",
+        "explanation": "Strong planets in 10th house or as 10th lord indicate specific career fields: Sun=Government/Authority, Moon=Healthcare/Public, Mars=Military/Technical, Mercury=Communication/Business, Jupiter=Teaching/Finance, Venus=Arts/Luxury, Saturn=Labor/Service.",
+    },
+    "d10_2nd_house": {
+        "name": "D10 2nd house (Speech & Finance)",
+        "explanation": "The 2nd house in D10 shows income from profession, speech/communication in career, and financial gains. Strong 2nd house indicates good earning potential.",
+    },
+    "d10_4th_house": {
+        "name": "D10 4th house (Assets & Peace)",
+        "explanation": "The 4th house in D10 shows assets through career, workplace environment, and inner peace in profession. Benefics here indicate comfortable work conditions.",
+    },
+    "d10_8th_house": {
+        "name": "D10 8th house (Research & Transformation)",
+        "explanation": "The 8th house in D10 indicates research-oriented career, sudden changes, inheritance, and transformation through profession. Strong 8th can give occult/mystical careers.",
+    },
+    "d10_9th_house": {
+        "name": "D10 9th house (Fortune & Teaching)",
+        "explanation": "The 9th house in D10 shows fortune in career, higher learning, teaching, philosophy, and long-distance work. Benefics bring luck and recognition.",
+    },
+    "dasha_career_timing": {
+        "name": "Dasha periods for career timing",
+        "explanation": "Current and upcoming Dasha periods show timing for career events. Dasha of 10th lord, planets in 10th, or planets aspecting 10th bring career opportunities.",
+    },
+    "d1_d10_strength_comparison": {
+        "name": "D1 vs D10 strength comparison",
+        "explanation": "Comparing planet strength in D1 (birth chart) and D10 (career chart). Planets strong in both give consistent success; strong in D10 only gives career-specific talent.",
+    },
+    "moon_10th_career": {
+        "name": "10th house from Moon (Chandra Lagna)",
+        "explanation": "The 10th house counted from Moon shows emotional satisfaction in career and public perception. Should align with 10th from Ascendant for fulfillment.",
+    },
+    "d10_benefic_malefic_ratio": {
+        "name": "Benefics vs Malefics ratio in D10",
+        "explanation": "The ratio of benefic to malefic planets in D10 shows overall career environment. More benefics indicate smooth progress; more malefics indicate struggle and effort.",
+    },
+    # Phase 3 Advanced Enhancements
+    "exalted_in_both_d1_d10": {
+        "name": "Planets exalted in both D1 and D10",
+        "explanation": "Planets exalted in both birth chart and career chart show exceptional, consistent talent that manifests strongly in profession. These are rare and highly auspicious.",
+    },
+    "jupiter_aspects_d10": {
+        "name": "Jupiter aspects in D10",
+        "explanation": "Jupiter's aspects in D10 bring wisdom, expansion, opportunities, and protection to the aspected houses/planets. Jupiter's 5th, 7th, and 9th aspects are particularly beneficial.",
+    },
+    "saturn_aspects_d10": {
+        "name": "Saturn aspects in D10",
+        "explanation": "Saturn's aspects in D10 bring discipline, structure, delays, and responsibility to aspected houses/planets. Can indicate areas requiring patience and systematic effort.",
+    },
+    "retrograde_planets_d10": {
+        "name": "Retrograde planets in D10",
+        "explanation": "Retrograde planets in D10 indicate unconventional career approaches, unique methods, and non-traditional paths. Can show genius in specialized fields or alternative career trajectories.",
+    },
 }
 
 # 10th house significator: career, authority, profession
@@ -477,10 +560,12 @@ def career_rules(
     d10_cusps = _get_d1_cusps(d10) if "_enhanced" in d10 and "houses" in d10["_enhanced"] else [i * 30.0 for i in range(12)]
     kendra_benefics_d10 = []
     kendra_malefics_d10 = []
+
     for pname, pdata in d10.items():
         if pname.startswith("_") or not isinstance(pdata, dict) or "longitude" not in pdata:
             continue
         h = _which_house_d1(pdata["longitude"], d10_cusps)
+
         if h not in (1, 4, 7, 10):
             continue
         if pname in BENEFICS:
@@ -726,6 +811,782 @@ def career_rules(
             meta = _rule_meta("combust_in_10th")
             planets_str = ", ".join([p for p, s in cb_results])
             applied_rules.append({"rule_id": "combust_in_10th", "name": meta["name"], "explanation": meta["explanation"] + f" Planets: {planets_str}.", "score": scores.get("combust_in_10th", 0.3)})
+
+    # ========== PHASE 1 ENHANCEMENTS ==========
+
+    # 28) D10 Lagna strength and lord placement
+    if "Ascendant" in d10 and isinstance(d10["Ascendant"], dict):
+        d10_lagna_rasi = d10["Ascendant"].get("rasi")
+        if d10_lagna_rasi:
+            d10_lagna_lord = RASI_LORDS.get(d10_lagna_rasi, "")
+
+            # Check D10 Lagna lord placement
+            if d10_lagna_lord and d10_lagna_lord in d10 and isinstance(d10[d10_lagna_lord], dict):
+                d10_lagna_lord_house = None
+                if "longitude" in d10[d10_lagna_lord]:
+                    d10_lagna_lord_house = _which_house_d1(d10[d10_lagna_lord]["longitude"], d10_cusps)
+
+                # Calculate strength - Base score for all D10 Lagna lord placements
+                lagna_strength = 0.3  # Base score
+                strength_factors = [f"house {d10_lagna_lord_house}"]
+
+                # Bonus for favorable house placement
+                if d10_lagna_lord_house in (1, 4, 7, 10):
+                    lagna_strength += 0.5
+                    strength_factors.append("Kendra (strong)")
+                elif d10_lagna_lord_house in (5, 9):
+                    lagna_strength += 0.4
+                    strength_factors.append("Trikona (fortunate)")
+                elif d10_lagna_lord_house in (2, 11):
+                    lagna_strength += 0.2
+                    strength_factors.append("wealth house")
+                elif d10_lagna_lord_house in (3, 6):
+                    lagna_strength += 0.1
+                    strength_factors.append("Upachaya (growth through effort)")
+                else:
+                    strength_factors.append("neutral placement")
+
+                # Check if D10 Lagna lord is in own sign or exalted
+                d10_lagna_lord_rasi = d10[d10_lagna_lord].get("rasi")
+                if d10_lagna_lord_rasi in OWN_SIGNS.get(d10_lagna_lord, []):
+                    lagna_strength += 0.3
+                    strength_factors.append("own sign")
+                elif d10_lagna_lord_rasi == EXALTATION.get(d10_lagna_lord):
+                    lagna_strength += 0.4
+                    strength_factors.append("exalted")
+
+                # Always report D10 Lagna lord placement
+                if d10_lagna_lord_house:
+                    factors.append(f"D10_lagna_lord_{d10_lagna_lord}_{','.join(strength_factors)}")
+                    scores["d10_lagna_strength"] = min(1.0, lagna_strength)
+                    meta = _rule_meta("d10_lagna_strength")
+                    applied_rules.append({
+                        "rule_id": "d10_lagna_strength",
+                        "name": meta["name"],
+                        "explanation": meta["explanation"] + f" D10 Lagna: {d10_lagna_rasi}, Lord: {d10_lagna_lord} ({', '.join(strength_factors)}).",
+                        "score": scores["d10_lagna_strength"]
+                    })
+
+    # 29) D10 10th lord placement and strength
+    if "_enhanced" in d10 and "houses" in d10["_enhanced"] and "House_10" in d10["_enhanced"]["houses"]:
+        d10_10th_rasi = d10["_enhanced"]["houses"]["House_10"].get("rasi")
+        if d10_10th_rasi:
+            d10_10th_lord = RASI_LORDS.get(d10_10th_rasi, "")
+
+            if d10_10th_lord and d10_10th_lord in d10 and isinstance(d10[d10_10th_lord], dict):
+                d10_10th_lord_house = None
+                if "longitude" in d10[d10_10th_lord]:
+                    d10_10th_lord_house = _which_house_d1(d10[d10_10th_lord]["longitude"], d10_cusps)
+
+                # Calculate D10 10th lord strength - Base score for all placements
+                d10_10th_strength = 0.3  # Base score
+                d10_10th_factors = [f"house {d10_10th_lord_house}"]
+
+                # Bonus for favorable house placement
+                if d10_10th_lord_house in (1, 4, 7, 10):
+                    d10_10th_strength += 0.6
+                    d10_10th_factors.append("Kendra (strong)")
+                elif d10_10th_lord_house in (5, 9):
+                    d10_10th_strength += 0.5
+                    d10_10th_factors.append("Trikona (fortunate)")
+                elif d10_10th_lord_house in (2, 11):
+                    d10_10th_strength += 0.3
+                    d10_10th_factors.append("wealth house")
+                elif d10_10th_lord_house in (3, 6):
+                    d10_10th_strength += 0.2
+                    d10_10th_factors.append("Upachaya (growth)")
+                else:
+                    d10_10th_factors.append("neutral")
+
+                # Check sign strength
+                d10_10th_lord_rasi = d10[d10_10th_lord].get("rasi")
+                if d10_10th_lord_rasi in OWN_SIGNS.get(d10_10th_lord, []):
+                    d10_10th_strength += 0.3
+                    d10_10th_factors.append("own sign")
+                elif d10_10th_lord_rasi == EXALTATION.get(d10_10th_lord):
+                    d10_10th_strength += 0.4
+                    d10_10th_factors.append("exalted")
+
+                # Always report D10 10th lord placement
+                if d10_10th_lord_house:
+                    factors.append(f"D10_10th_lord_{d10_10th_lord}_{','.join(d10_10th_factors)}")
+                    scores["d10_10th_lord_placement"] = min(1.0, d10_10th_strength)
+                    meta = _rule_meta("d10_10th_lord_placement")
+                    applied_rules.append({
+                        "rule_id": "d10_10th_lord_placement",
+                        "name": meta["name"],
+                        "explanation": meta["explanation"] + f" D10 10th house: {d10_10th_rasi}, Lord: {d10_10th_lord} ({', '.join(d10_10th_factors)}).",
+                        "score": scores["d10_10th_lord_placement"]
+                    })
+
+    # 30) Big Three Lords combined analysis
+    # The three most important lords: D10 Lagna lord, D10 10th lord, D1 10th lord
+    big_three_score = 0.0
+    big_three_details = []
+
+    # D10 Lagna lord strength (already calculated above)
+    if "d10_lagna_strength" in scores:
+        big_three_score += scores["d10_lagna_strength"] * 0.33
+        big_three_details.append(f"D10 Lagna lord: {scores['d10_lagna_strength']:.2f}")
+
+    # D10 10th lord strength (already calculated above)
+    if "d10_10th_lord_placement" in scores:
+        big_three_score += scores["d10_10th_lord_placement"] * 0.33
+        big_three_details.append(f"D10 10th lord: {scores['d10_10th_lord_placement']:.2f}")
+
+    # D1 10th lord strength (already calculated above)
+    if "d1_10th_lord_placement" in scores:
+        big_three_score += scores["d1_10th_lord_placement"] * 0.34
+        big_three_details.append(f"D1 10th lord: {scores['d1_10th_lord_placement']:.2f}")
+
+    if big_three_score > 0 and len(big_three_details) >= 2:
+        factors.append(f"big_three_lords_combined_{big_three_score:.2f}")
+        scores["big_three_lords"] = big_three_score
+        meta = _rule_meta("big_three_lords")
+        applied_rules.append({
+            "rule_id": "big_three_lords",
+            "name": meta["name"],
+            "explanation": meta["explanation"] + f" Combined score: {big_three_score:.2f}. Details: {'; '.join(big_three_details)}.",
+            "score": big_three_score
+        })
+
+    # 31) Artha Trikona (2nd, 6th, 10th houses) - Wealth Triangle
+    artha_trikona_score = 0.0
+    artha_details = []
+
+    # Analyze 2nd house (income)
+    house_2_planets = []
+    for pname, pdata in d1.items():
+        if pname.startswith("_") or not isinstance(pdata, dict) or "longitude" not in pdata:
+            continue
+        h = _which_house_d1(pdata["longitude"], cusps)
+        if h == 2:
+            house_2_planets.append(pname)
+            if pname in BENEFICS:
+                artha_trikona_score += 0.15
+                artha_details.append(f"2nd house: {pname} (benefic)")
+
+    # Analyze 6th house (service/daily work)
+    house_6_planets = []
+    for pname, pdata in d1.items():
+        if pname.startswith("_") or not isinstance(pdata, dict) or "longitude" not in pdata:
+            continue
+        h = _which_house_d1(pdata["longitude"], cusps)
+        if h == 6:
+            house_6_planets.append(pname)
+            if pname in BENEFICS:
+                artha_trikona_score += 0.1
+                artha_details.append(f"6th house: {pname} (benefic)")
+
+    # 10th house already analyzed (use existing benefics score)
+    if "d1_10th_benefics" in scores and scores["d1_10th_benefics"] > 0:
+        artha_trikona_score += scores["d1_10th_benefics"] * 0.2
+        artha_details.append(f"10th house: {int(scores['d1_10th_benefics'])} benefics")
+
+    # Check lords of these houses
+    if len(cusps) >= 10:
+        rasis = ["Mesha", "Rishaba", "Mithuna", "Kataka", "Simha", "Kanni",
+                 "Thula", "Vrischika", "Dhanus", "Makara", "Kumbha", "Meena"]
+
+        # 2nd house lord
+        house_2_rasi_idx = int(cusps[1] // 30) % 12
+        house_2_rasi = rasis[house_2_rasi_idx]
+        house_2_lord = RASI_LORDS.get(house_2_rasi, "")
+
+        # 6th house lord
+        house_6_rasi_idx = int(cusps[5] // 30) % 12
+        house_6_rasi = rasis[house_6_rasi_idx]
+        house_6_lord = RASI_LORDS.get(house_6_rasi, "")
+
+        # Check if any Artha Trikona lords are connected
+        lords_connected = []
+        if house_2_lord and tenth_lord and house_2_lord == tenth_lord:
+            lords_connected.append("2nd-10th same lord")
+            artha_trikona_score += 0.3
+        if house_6_lord and tenth_lord and house_6_lord == tenth_lord:
+            lords_connected.append("6th-10th same lord")
+            artha_trikona_score += 0.3
+        if house_2_lord and house_6_lord and house_2_lord == house_6_lord:
+            lords_connected.append("2nd-6th same lord")
+            artha_trikona_score += 0.2
+
+        if lords_connected:
+            artha_details.append(", ".join(lords_connected))
+
+    if artha_trikona_score > 0:
+        factors.append(f"artha_trikona_{artha_trikona_score:.2f}")
+        scores["artha_trikona"] = min(1.0, artha_trikona_score)
+        meta = _rule_meta("artha_trikona")
+        applied_rules.append({
+            "rule_id": "artha_trikona",
+            "name": meta["name"],
+            "explanation": meta["explanation"] + f" Score: {scores['artha_trikona']:.2f}. Details: {'; '.join(artha_details) if artha_details else 'Wealth houses occupied'}.",
+            "score": scores["artha_trikona"]
+        })
+
+    # 32) Business vs. Job indicator
+    # 6th house = service/job, 7th house = business/partnerships
+    business_vs_job_score = 0.0
+    business_job_details = []
+
+    # Count benefics in 6th (job indicator)
+    house_6_benefics = sum(1 for p in house_6_planets if p in BENEFICS)
+
+    # Count benefics in 7th (business indicator)
+    house_7_planets = []
+    house_7_benefics = 0
+    for pname, pdata in d1.items():
+        if pname.startswith("_") or not isinstance(pdata, dict) or "longitude" not in pdata:
+            continue
+        h = _which_house_d1(pdata["longitude"], cusps)
+        if h == 7:
+            house_7_planets.append(pname)
+            if pname in BENEFICS:
+                house_7_benefics += 1
+
+    # Determine career type
+    if house_7_benefics > house_6_benefics:
+        business_vs_job_score = 0.7
+        business_job_details.append(f"Business tendency (7th house: {house_7_benefics} benefics > 6th house: {house_6_benefics} benefics)")
+        career_type = "Business/Entrepreneurship"
+    elif house_6_benefics > house_7_benefics:
+        business_vs_job_score = 0.6
+        business_job_details.append(f"Job/Service tendency (6th house: {house_6_benefics} benefics > 7th house: {house_7_benefics} benefics)")
+        career_type = "Job/Service"
+    else:
+        business_vs_job_score = 0.5
+        business_job_details.append(f"Balanced (6th house: {house_6_benefics} benefics, 7th house: {house_7_benefics} benefics)")
+        career_type = "Flexible"
+
+    if business_vs_job_score > 0:
+        factors.append(f"business_vs_job_{career_type.replace('/', '_')}")
+        scores["business_vs_job"] = business_vs_job_score
+        meta = _rule_meta("business_vs_job")
+        applied_rules.append({
+            "rule_id": "business_vs_job",
+            "name": meta["name"],
+            "explanation": meta["explanation"] + f" Career type: {career_type}. {'; '.join(business_job_details)}.",
+            "score": business_vs_job_score
+        })
+
+    # 33) Saturn placement in D10
+    if "Saturn" in d10 and isinstance(d10["Saturn"], dict) and "longitude" in d10["Saturn"]:
+        saturn_d10_house = _which_house_d1(d10["Saturn"]["longitude"], d10_cusps)
+        saturn_d10_rasi = d10["Saturn"].get("rasi")
+
+        saturn_score = 0.0
+        saturn_details = []
+
+        # Saturn in Upachaya houses (3,6,10,11) in D10 is favorable
+        if saturn_d10_house in (3, 6, 10, 11):
+            saturn_score = 0.8
+            saturn_details.append(f"in Upachaya house {saturn_d10_house} (favorable for career discipline)")
+        elif saturn_d10_house in (1, 4, 7):
+            saturn_score = 0.4
+            saturn_details.append(f"in Kendra house {saturn_d10_house} (brings responsibility)")
+        else:
+            saturn_score = 0.3
+            saturn_details.append(f"in house {saturn_d10_house}")
+
+        # Check Saturn's sign strength in D10
+        if saturn_d10_rasi in OWN_SIGNS.get("Saturn", []):
+            saturn_score += 0.2
+            saturn_details.append("in own sign (disciplined success)")
+        elif saturn_d10_rasi == EXALTATION.get("Saturn"):
+            saturn_score += 0.3
+            saturn_details.append("exalted (systematic growth)")
+
+        factors.append(f"Saturn_in_D10_house_{saturn_d10_house}_{saturn_d10_rasi}")
+        scores["saturn_in_d10"] = min(1.0, saturn_score)
+        meta = _rule_meta("saturn_in_d10")
+        applied_rules.append({
+            "rule_id": "saturn_in_d10",
+            "name": meta["name"],
+            "explanation": meta["explanation"] + f" Saturn in D10: {', '.join(saturn_details)}.",
+            "score": scores["saturn_in_d10"]
+        })
+
+    # ========== PHASE 2 ENHANCEMENTS ==========
+
+    # 34) Planetary Career Type Indicators
+    # Analyze which planets are strong in 10th house or as 10th lord to determine career field
+    career_type_planets = {}
+    planet_career_types = {
+        "Sun": "Government/Authority/Leadership",
+        "Moon": "Healthcare/Public Service/Hospitality",
+        "Mars": "Military/Technical/Engineering/Sports",
+        "Mercury": "Communication/Business/Writing/IT",
+        "Jupiter": "Teaching/Finance/Law/Counseling",
+        "Venus": "Arts/Entertainment/Luxury/Design",
+        "Saturn": "Labor/Service/Mining/Real Estate"
+    }
+
+    # Check planets in 10th house D1
+    for pname in planets_in_10:
+        if pname in planet_career_types:
+            if pname not in career_type_planets:
+                career_type_planets[pname] = []
+            career_type_planets[pname].append("in 10th house")
+
+    # Check if 10th lord matches a career planet
+    if tenth_lord in planet_career_types:
+        if tenth_lord not in career_type_planets:
+            career_type_planets[tenth_lord] = []
+        career_type_planets[tenth_lord].append("10th lord")
+
+    # Check strong planets aspecting 10th house
+    if get_planets_aspecting_10th_house:
+        asp_10 = get_planets_aspecting_10th_house(d1)
+        for planet, aspect_type in asp_10:
+            if planet in planet_career_types and planet not in planets_in_10:
+                if planet not in career_type_planets:
+                    career_type_planets[planet] = []
+                career_type_planets[planet].append("aspects 10th")
+
+    if career_type_planets:
+        career_fields = []
+        planet_details = []
+        for planet, reasons in career_type_planets.items():
+            career_fields.append(planet_career_types[planet])
+            planet_details.append(f"{planet} ({', '.join(reasons)})")
+
+        factors.append(f"planetary_career_indicators_{','.join(career_type_planets.keys())}")
+        scores["planetary_career_indicators"] = min(1.0, 0.3 * len(career_type_planets))
+        meta = _rule_meta("planetary_career_indicators")
+        applied_rules.append({
+            "rule_id": "planetary_career_indicators",
+            "name": meta["name"],
+            "explanation": meta["explanation"] + f" Indicated fields: {'; '.join(set(career_fields))}. Planets: {', '.join(planet_details)}.",
+            "score": scores["planetary_career_indicators"]
+        })
+
+    # 35) D10 2nd house (Speech & Finance in career)
+    if "_enhanced" in d10 and "houses" in d10["_enhanced"] and "House_2" in d10["_enhanced"]["houses"]:
+        d10_2nd_planets = []
+        d10_2nd_rasi = d10["_enhanced"]["houses"]["House_2"].get("rasi")
+
+        # Find planets in D10 2nd house
+        for pname, pdata in d10.items():
+            if pname.startswith("_") or not isinstance(pdata, dict) or "longitude" not in pdata:
+                continue
+            h = _which_house_d1(pdata["longitude"], d10_cusps)
+            if h == 2:
+                d10_2nd_planets.append(pname)
+
+        if d10_2nd_planets:
+            benefic_count = sum(1 for p in d10_2nd_planets if p in BENEFICS)
+            score = min(1.0, 0.2 * benefic_count + 0.3)
+
+            factors.append(f"D10_2nd_house_{','.join(d10_2nd_planets)}")
+            scores["d10_2nd_house"] = score
+            meta = _rule_meta("d10_2nd_house")
+            applied_rules.append({
+                "rule_id": "d10_2nd_house",
+                "name": meta["name"],
+                "explanation": meta["explanation"] + f" Planets in D10 2nd: {', '.join(d10_2nd_planets)} ({benefic_count} benefics). Good for income and communication.",
+                "score": score
+            })
+
+    # 36) D10 4th house (Assets & Peace in career)
+    if "_enhanced" in d10 and "houses" in d10["_enhanced"] and "House_4" in d10["_enhanced"]["houses"]:
+        d10_4th_planets = []
+
+        for pname, pdata in d10.items():
+            if pname.startswith("_") or not isinstance(pdata, dict) or "longitude" not in pdata:
+                continue
+            h = _which_house_d1(pdata["longitude"], d10_cusps)
+            if h == 4:
+                d10_4th_planets.append(pname)
+
+        if d10_4th_planets:
+            benefic_count = sum(1 for p in d10_4th_planets if p in BENEFICS)
+            score = min(1.0, 0.25 * benefic_count + 0.2)
+
+            factors.append(f"D10_4th_house_{','.join(d10_4th_planets)}")
+            scores["d10_4th_house"] = score
+            meta = _rule_meta("d10_4th_house")
+            applied_rules.append({
+                "rule_id": "d10_4th_house",
+                "name": meta["name"],
+                "explanation": meta["explanation"] + f" Planets in D10 4th: {', '.join(d10_4th_planets)} ({benefic_count} benefics). Comfortable work environment.",
+                "score": score
+            })
+
+    # 37) D10 8th house (Research & Transformation)
+    if "_enhanced" in d10 and "houses" in d10["_enhanced"] and "House_8" in d10["_enhanced"]["houses"]:
+        d10_8th_planets = []
+
+        for pname, pdata in d10.items():
+            if pname.startswith("_") or not isinstance(pdata, dict) or "longitude" not in pdata:
+                continue
+            h = _which_house_d1(pdata["longitude"], d10_cusps)
+            if h == 8:
+                d10_8th_planets.append(pname)
+
+        if d10_8th_planets:
+            # 8th house is complex - malefics can be good for research careers
+            score = min(1.0, 0.2 * len(d10_8th_planets) + 0.2)
+
+            factors.append(f"D10_8th_house_{','.join(d10_8th_planets)}")
+            scores["d10_8th_house"] = score
+            meta = _rule_meta("d10_8th_house")
+            applied_rules.append({
+                "rule_id": "d10_8th_house",
+                "name": meta["name"],
+                "explanation": meta["explanation"] + f" Planets in D10 8th: {', '.join(d10_8th_planets)}. Research, occult, or transformative career.",
+                "score": score
+            })
+
+    # 38) D10 9th house (Fortune & Teaching)
+    if "_enhanced" in d10 and "houses" in d10["_enhanced"] and "House_9" in d10["_enhanced"]["houses"]:
+        d10_9th_planets = []
+
+        for pname, pdata in d10.items():
+            if pname.startswith("_") or not isinstance(pdata, dict) or "longitude" not in pdata:
+                continue
+            h = _which_house_d1(pdata["longitude"], d10_cusps)
+            if h == 9:
+                d10_9th_planets.append(pname)
+
+        if d10_9th_planets:
+            benefic_count = sum(1 for p in d10_9th_planets if p in BENEFICS)
+            score = min(1.0, 0.3 * benefic_count + 0.4)
+
+            factors.append(f"D10_9th_house_{','.join(d10_9th_planets)}")
+            scores["d10_9th_house"] = score
+            meta = _rule_meta("d10_9th_house")
+            applied_rules.append({
+                "rule_id": "d10_9th_house",
+                "name": meta["name"],
+                "explanation": meta["explanation"] + f" Planets in D10 9th: {', '.join(d10_9th_planets)} ({benefic_count} benefics). Fortune and higher learning.",
+                "score": score
+            })
+
+    # 39) Dasha Career Timing
+    if dasha_current:
+        current_dasa = dasha_current.get("current_dasa")
+        current_bhukti = dasha_current.get("current_bhukti")
+
+        timing_factors = []
+        timing_score = 0.0
+
+        # Check if current Dasha lord is in 10th or aspects 10th
+        if current_dasa in planets_in_10:
+            timing_factors.append(f"{current_dasa} Dasha (in 10th house)")
+            timing_score += 0.5
+
+        # Check if current Bhukti lord is related to career
+        if current_bhukti in planets_in_10:
+            timing_factors.append(f"{current_bhukti} Bhukti (in 10th house)")
+            timing_score += 0.3
+
+        # Check if Dasha lord is 10th lord (already covered in earlier rule, but add timing context)
+        if current_dasa == tenth_lord:
+            timing_factors.append(f"{current_dasa} is 10th lord")
+            timing_score += 0.4
+
+        if timing_factors:
+            factors.append(f"dasha_career_timing_{current_dasa}_{current_bhukti}")
+            scores["dasha_career_timing"] = min(1.0, timing_score)
+            meta = _rule_meta("dasha_career_timing")
+            applied_rules.append({
+                "rule_id": "dasha_career_timing",
+                "name": meta["name"],
+                "explanation": meta["explanation"] + f" Current period: {current_dasa}/{current_bhukti}. {'; '.join(timing_factors)}. Favorable time for career moves.",
+                "score": scores["dasha_career_timing"]
+            })
+
+    # 40) D1 vs D10 Strength Comparison
+    # Compare planets that are strong in both D1 and D10
+    strong_in_both = []
+    strong_in_d10_only = []
+
+    for pname in ["Sun", "Moon", "Mars", "Mercury", "Jupiter", "Venus", "Saturn"]:
+        if pname not in d1 or pname not in d10:
+            continue
+
+        # Check D1 strength
+        d1_rasi = d1[pname].get("rasi") if isinstance(d1[pname], dict) else None
+        d1_strong = (d1_rasi in OWN_SIGNS.get(pname, []) or d1_rasi == EXALTATION.get(pname))
+
+        # Check D10 strength
+        d10_rasi = d10[pname].get("rasi") if isinstance(d10[pname], dict) else None
+        d10_strong = (d10_rasi in OWN_SIGNS.get(pname, []) or d10_rasi == EXALTATION.get(pname))
+
+        if d1_strong and d10_strong:
+            strong_in_both.append(pname)
+        elif d10_strong and not d1_strong:
+            strong_in_d10_only.append(pname)
+
+    if strong_in_both or strong_in_d10_only:
+        comparison_details = []
+        score = 0.0
+
+        if strong_in_both:
+            comparison_details.append(f"Strong in both D1 & D10: {', '.join(strong_in_both)}")
+            score += 0.3 * len(strong_in_both)
+
+        if strong_in_d10_only:
+            comparison_details.append(f"Strong in D10 only (career talent): {', '.join(strong_in_d10_only)}")
+            score += 0.2 * len(strong_in_d10_only)
+
+        factors.append(f"D1_D10_strength_comparison")
+        scores["d1_d10_strength_comparison"] = min(1.0, score)
+        meta = _rule_meta("d1_d10_strength_comparison")
+        applied_rules.append({
+            "rule_id": "d1_d10_strength_comparison",
+            "name": meta["name"],
+            "explanation": meta["explanation"] + f" {'; '.join(comparison_details)}.",
+            "score": scores["d1_d10_strength_comparison"]
+        })
+
+    # 41) 10th house from Moon (Chandra Lagna)
+    if "Moon" in d1 and isinstance(d1["Moon"], dict) and "longitude" in d1["Moon"]:
+        moon_lon = d1["Moon"]["longitude"]
+        moon_house_idx = _which_house_d1(moon_lon, cusps) - 1  # 0-based index
+
+        # 10th from Moon is 9 houses ahead (0-based)
+        tenth_from_moon_idx = (moon_house_idx + 9) % 12
+
+        # Get the rasi of 10th from Moon
+        if len(cusps) > tenth_from_moon_idx:
+            tenth_from_moon_cusp = cusps[tenth_from_moon_idx]
+            tenth_from_moon_rasi_idx = int(tenth_from_moon_cusp // 30) % 12
+            rasis = ["Mesha", "Rishaba", "Mithuna", "Kataka", "Simha", "Kanni",
+                     "Thula", "Vrischika", "Dhanus", "Makara", "Kumbha", "Meena"]
+            tenth_from_moon_rasi = rasis[tenth_from_moon_rasi_idx]
+            tenth_from_moon_lord = RASI_LORDS.get(tenth_from_moon_rasi, "")
+
+            # Find planets in 10th from Moon
+            planets_in_10th_from_moon = []
+            for pname, pdata in d1.items():
+                if pname.startswith("_") or not isinstance(pdata, dict) or "longitude" not in pdata:
+                    continue
+                h = _which_house_d1(pdata["longitude"], cusps)
+                if h == (tenth_from_moon_idx + 1):  # Convert back to 1-based
+                    planets_in_10th_from_moon.append(pname)
+
+            if planets_in_10th_from_moon or tenth_from_moon_lord:
+                score = min(1.0, 0.2 * len(planets_in_10th_from_moon) + 0.3)
+
+                factors.append(f"moon_10th_career_{tenth_from_moon_rasi}")
+                scores["moon_10th_career"] = score
+                meta = _rule_meta("moon_10th_career")
+                applied_rules.append({
+                    "rule_id": "moon_10th_career",
+                    "name": meta["name"],
+                    "explanation": meta["explanation"] + f" 10th from Moon: {tenth_from_moon_rasi} (lord: {tenth_from_moon_lord}). Planets: {', '.join(planets_in_10th_from_moon) if planets_in_10th_from_moon else 'None'}.",
+                    "score": score
+                })
+
+    # 42) Benefics vs Malefics Ratio in D10
+    d10_benefics = []
+    d10_malefics = []
+
+    for pname, pdata in d10.items():
+        if pname.startswith("_") or not isinstance(pdata, dict) or "longitude" not in pdata:
+            continue
+        if pname in BENEFICS:
+            d10_benefics.append(pname)
+        elif pname in MALEFICS:
+            d10_malefics.append(pname)
+
+    if d10_benefics or d10_malefics:
+        benefic_count = len(d10_benefics)
+        malefic_count = len(d10_malefics)
+        total = benefic_count + malefic_count
+
+        if total > 0:
+            benefic_ratio = benefic_count / total
+
+            # Higher benefic ratio = smoother career path
+            if benefic_ratio >= 0.6:
+                score = 0.8
+                interpretation = "smooth progress"
+            elif benefic_ratio >= 0.4:
+                score = 0.5
+                interpretation = "balanced (effort with support)"
+            else:
+                score = 0.3
+                interpretation = "challenging (success through struggle)"
+
+            factors.append(f"D10_benefic_malefic_ratio_{benefic_count}:{malefic_count}")
+            scores["d10_benefic_malefic_ratio"] = score
+            meta = _rule_meta("d10_benefic_malefic_ratio")
+            applied_rules.append({
+                "rule_id": "d10_benefic_malefic_ratio",
+                "name": meta["name"],
+                "explanation": meta["explanation"] + f" Benefics: {benefic_count} ({', '.join(d10_benefics)}), Malefics: {malefic_count} ({', '.join(d10_malefics)}). Career path: {interpretation}.",
+                "score": score
+            })
+
+    # ========== PHASE 3 ADVANCED ENHANCEMENTS ==========
+
+    # 43) Planets Exalted in Both D1 and D10
+    # This is rare and highly auspicious - shows exceptional, consistent talent
+    exalted_in_both = []
+
+    for pname in ["Sun", "Moon", "Mars", "Mercury", "Jupiter", "Venus", "Saturn"]:
+        if pname not in d1 or pname not in d10:
+            continue
+
+        d1_rasi = d1[pname].get("rasi") if isinstance(d1[pname], dict) else None
+        d10_rasi = d10[pname].get("rasi") if isinstance(d10[pname], dict) else None
+
+        # Check if exalted in both
+        if d1_rasi == EXALTATION.get(pname) and d10_rasi == EXALTATION.get(pname):
+            exalted_in_both.append(pname)
+
+    if exalted_in_both:
+        # This is extremely rare and powerful
+        score = min(1.5, 0.5 * len(exalted_in_both))  # Can exceed 1.0 for exceptional cases
+
+        planet_details = []
+        for planet in exalted_in_both:
+            exalt_sign = EXALTATION.get(planet)
+            planet_details.append(f"{planet} (exalted in {exalt_sign})")
+
+        factors.append(f"exalted_in_both_D1_D10_{','.join(exalted_in_both)}")
+        scores["exalted_in_both_d1_d10"] = score
+        meta = _rule_meta("exalted_in_both_d1_d10")
+        applied_rules.append({
+            "rule_id": "exalted_in_both_d1_d10",
+            "name": meta["name"],
+            "explanation": meta["explanation"] + f" Planets: {', '.join(planet_details)}. Exceptional, consistent talent in career.",
+            "score": score
+        })
+
+    # 44) Jupiter Aspects in D10
+    # Jupiter aspects are highly beneficial - wisdom, expansion, opportunities
+    if "Jupiter" in d10 and isinstance(d10["Jupiter"], dict) and "longitude" in d10["Jupiter"]:
+        jupiter_lon = d10["Jupiter"]["longitude"]
+        jupiter_house = _which_house_d1(jupiter_lon, d10_cusps)
+
+        # Jupiter aspects: 5th, 7th, and 9th from its position
+        # Calculate which houses Jupiter aspects
+        jupiter_aspects_houses = [
+            (jupiter_house + 4) % 12 + 1,  # 5th aspect (0-based: +4)
+            (jupiter_house + 6) % 12 + 1,  # 7th aspect (0-based: +6)
+            (jupiter_house + 8) % 12 + 1,  # 9th aspect (0-based: +8)
+        ]
+
+        # Find planets in aspected houses
+        aspected_planets = []
+        aspected_houses_with_planets = []
+
+        for pname, pdata in d10.items():
+            if pname.startswith("_") or not isinstance(pdata, dict) or "longitude" not in pdata:
+                continue
+            if pname == "Jupiter":  # Skip Jupiter itself
+                continue
+
+            h = _which_house_d1(pdata["longitude"], d10_cusps)
+            if h in jupiter_aspects_houses:
+                aspected_planets.append(pname)
+                if h not in aspected_houses_with_planets:
+                    aspected_houses_with_planets.append(h)
+
+        if aspected_planets or jupiter_aspects_houses:
+            # Score based on benefic aspects and important houses (1,4,7,10)
+            score = 0.4  # Base score for Jupiter having aspects
+            benefic_aspects = sum(1 for p in aspected_planets if p in BENEFICS)
+            important_houses = sum(1 for h in jupiter_aspects_houses if h in [1, 4, 7, 10])
+
+            score += 0.1 * benefic_aspects
+            score += 0.15 * important_houses
+            score = min(1.0, score)
+
+            factors.append(f"Jupiter_aspects_D10_houses_{','.join(map(str, jupiter_aspects_houses))}")
+            scores["jupiter_aspects_d10"] = score
+            meta = _rule_meta("jupiter_aspects_d10")
+            applied_rules.append({
+                "rule_id": "jupiter_aspects_d10",
+                "name": meta["name"],
+                "explanation": meta["explanation"] + f" Jupiter in house {jupiter_house} aspects houses {', '.join(map(str, jupiter_aspects_houses))}. Aspected planets: {', '.join(aspected_planets) if aspected_planets else 'None'}. Brings wisdom and opportunities.",
+                "score": score
+            })
+
+    # 45) Saturn Aspects in D10
+    # Saturn aspects bring discipline, structure, but also delays
+    if "Saturn" in d10 and isinstance(d10["Saturn"], dict) and "longitude" in d10["Saturn"]:
+        saturn_lon = d10["Saturn"]["longitude"]
+        saturn_house = _which_house_d1(saturn_lon, d10_cusps)
+
+        # Saturn aspects: 3rd, 7th, and 10th from its position
+        saturn_aspects_houses = [
+            (saturn_house + 2) % 12 + 1,  # 3rd aspect (0-based: +2)
+            (saturn_house + 6) % 12 + 1,  # 7th aspect (0-based: +6)
+            (saturn_house + 9) % 12 + 1,  # 10th aspect (0-based: +9)
+        ]
+
+        # Find planets in aspected houses
+        aspected_planets = []
+        aspected_houses_with_planets = []
+
+        for pname, pdata in d10.items():
+            if pname.startswith("_") or not isinstance(pdata, dict) or "longitude" not in pdata:
+                continue
+            if pname == "Saturn":  # Skip Saturn itself
+                continue
+
+            h = _which_house_d1(pdata["longitude"], d10_cusps)
+            if h in saturn_aspects_houses:
+                aspected_planets.append(pname)
+                if h not in aspected_houses_with_planets:
+                    aspected_houses_with_planets.append(h)
+
+        if aspected_planets or saturn_aspects_houses:
+            # Score is neutral to slightly positive (discipline can be good)
+            score = 0.4  # Base score
+            # Saturn aspecting Upachaya houses (3,6,10,11) is favorable
+            upachaya_aspects = sum(1 for h in saturn_aspects_houses if h in [3, 6, 10, 11])
+            score += 0.15 * upachaya_aspects
+            score = min(1.0, score)
+
+            factors.append(f"Saturn_aspects_D10_houses_{','.join(map(str, saturn_aspects_houses))}")
+            scores["saturn_aspects_d10"] = score
+            meta = _rule_meta("saturn_aspects_d10")
+            applied_rules.append({
+                "rule_id": "saturn_aspects_d10",
+                "name": meta["name"],
+                "explanation": meta["explanation"] + f" Saturn in house {saturn_house} aspects houses {', '.join(map(str, saturn_aspects_houses))}. Aspected planets: {', '.join(aspected_planets) if aspected_planets else 'None'}. Brings discipline and structure.",
+                "score": score
+            })
+
+    # 46) Retrograde Planets in D10
+    # Retrograde planets indicate unconventional approaches, unique methods
+    retrograde_in_d10 = []
+
+    for pname in ["Mercury", "Venus", "Mars", "Jupiter", "Saturn"]:  # Exclude Sun/Moon (never retrograde)
+        if pname not in d10 or not isinstance(d10[pname], dict):
+            continue
+
+        is_retrograde = d10[pname].get("retrograde", False)
+        if is_retrograde:
+            # Also check which house it's in
+            planet_house = _which_house_d1(d10[pname]["longitude"], d10_cusps) if "longitude" in d10[pname] else None
+            retrograde_in_d10.append((pname, planet_house))
+
+    if retrograde_in_d10:
+        # Retrograde planets are not necessarily bad - they show unique approaches
+        score = min(1.0, 0.3 * len(retrograde_in_d10) + 0.2)
+
+        planet_details = []
+        for planet, house in retrograde_in_d10:
+            if house:
+                planet_details.append(f"{planet} in house {house}")
+            else:
+                planet_details.append(planet)
+
+        factors.append(f"retrograde_in_D10_{','.join([p for p, h in retrograde_in_d10])}")
+        scores["retrograde_planets_d10"] = score
+        meta = _rule_meta("retrograde_planets_d10")
+        applied_rules.append({
+            "rule_id": "retrograde_planets_d10",
+            "name": meta["name"],
+            "explanation": meta["explanation"] + f" Retrograde planets: {', '.join(planet_details)}. Indicates unconventional career approach or unique specialized skills.",
+            "score": score
+        })
 
     # Aggregate strength
     total_score = sum(s for s in scores.values() if isinstance(s, (int, float))) / max(len(scores), 1)
