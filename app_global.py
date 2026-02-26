@@ -9,6 +9,10 @@ Features:
 - Swiss Ephemeris planetary calculations
 """
 
+# Suppress urllib3/OpenSSL warning on macOS (LibreSSL)
+import warnings
+warnings.filterwarnings("ignore", message="urllib3 v2 only supports OpenSSL")
+
 # Import environment configuration first
 import environment_config
 
@@ -19,7 +23,12 @@ import json
 import csv
 import io
 import requests
+from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import TimeoutError as FuturesTimeoutError
 from typing import Dict, Optional
+
+_STATS_TIMEOUT = 18  # seconds for index stats (Supabase client timeout is 12s)
+_executor = ThreadPoolExecutor(max_workers=2)
 
 # Career prediction API (FastAPI) base URL
 CAREER_API_URL = os.environ.get('CAREER_API_URL', 'http://127.0.0.1:8000')
@@ -31,31 +40,70 @@ from swiss_ephemeris_utils import calculate_planetary_positions_global
 from enhanced_swiss_ephemeris import calculate_enhanced_planetary_positions, extract_enhanced_planetary_data
 from category_definitions import get_category_options, validate_categories, PRIMARY_CATEGORIES, SUB_CATEGORIES, SPECIFIC_CONDITIONS
 
-app = Flask(__name__)
+_APP_ROOT = os.path.dirname(os.path.abspath(__file__))
+app = Flask(__name__, template_folder=os.path.join(_APP_ROOT, 'templates'), static_folder=os.path.join(_APP_ROOT, 'static'))
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'your-secret-key-here')
 
 # Check if Supabase is configured
 if not supabase_manager:
     print("Warning: Supabase not configured. Please set SUPABASE_URL and SUPABASE_ANON_KEY environment variables.")
 
+@app.route('/health')
+def health():
+    """Lightweight liveness check (no Supabase). Use for server tests."""
+    return jsonify({"status": "ok", "service": "flask"}), 200
+
+@app.route('/api/status')
+def api_status():
+    """Diagnostic: Supabase connection and first query. Check this if home shows 0 charts."""
+    out = {"supabase_configured": supabase_manager is not None, "supabase_ok": False, "charts_count": None, "error": None, "rls_hint": None}
+    if not supabase_manager:
+        out["error"] = "Supabase not configured (missing SUPABASE_URL or SUPABASE_ANON_KEY)"
+        return jsonify(out), 200
+    try:
+        # Simple query to see if anon can read (RLS and grants)
+        result = supabase_manager.supabase.table("astrology_charts").select("id").limit(5).execute()
+        out["supabase_ok"] = True
+        data = result.data if result.data is not None else []
+        # Get full count with timeout so diagnostic doesn't hang
+        try:
+            future = _executor.submit(supabase_manager.get_statistics)
+            stats = future.result(timeout=10)
+            out["charts_count"] = stats.get("total_charts", 0)
+        except FuturesTimeoutError:
+            out["charts_count"] = None
+            out["error"] = "get_statistics timed out (Supabase slow or many rows)"
+        except Exception as e2:
+            out["charts_count"] = None
+            out["error"] = str(e2)
+    except Exception as e:
+        out["error"] = str(e)
+        if "403" in str(e) or "Forbidden" in str(e) or "PGRST301" in str(e):
+            out["rls_hint"] = "Run migrations/supabase_rls_anon_policies.sql in Supabase SQL Editor to allow anon read/write."
+    return jsonify(out), 200
+
 @app.route('/')
 def index():
     """Home page with statistics"""
+    total_charts = 0
+    category_counts = {}
     try:
         if supabase_manager:
-            stats = supabase_manager.get_statistics()
-            total_charts = stats['total_charts']
-            category_counts = stats['category_counts']
-        else:
-            total_charts = 0
-            category_counts = {}
-        
-        return render_template('index_global.html', 
+            try:
+                future = _executor.submit(supabase_manager.get_statistics)
+                stats = future.result(timeout=_STATS_TIMEOUT)
+                total_charts = stats['total_charts']
+                category_counts = stats['category_counts']
+            except FuturesTimeoutError:
+                print("Index: get_statistics timed out, showing 0 stats")
+            except Exception as e:
+                print(f"Index: get_statistics error: {e}")
+        return render_template('index_global.html',
                              total_charts=total_charts,
                              category_counts=category_counts)
     except Exception as e:
         print(f"Error in index: {e}")
-        return render_template('index_global.html', 
+        return render_template('index_global.html',
                              total_charts=0,
                              category_counts={})
 
@@ -829,12 +877,13 @@ def get_rasi_lord(rasi: str) -> str:
     return rasi_lords.get(rasi, '')
 
 if __name__ == '__main__':
-    print("🌍 Starting Global Astrology Database")
-    print("=" * 50)
-    
+    import sys
+    print("🌍 Starting Global Astrology Database", flush=True)
+    print("=" * 50, flush=True)
     if supabase_manager:
-        print("✅ Supabase configured")
+        print("✅ Supabase configured", flush=True)
     else:
-        print("⚠️  Supabase not configured - using demo mode")
-    
-    app.run(debug=True, host='0.0.0.0', port=8081) 
+        print("⚠️  Supabase not configured - using demo mode", flush=True)
+    print("→ Open http://127.0.0.1:8081", flush=True)
+    # use_reloader=False avoids double startup and port-in-use on some systems
+    app.run(debug=True, host='0.0.0.0', port=8081, use_reloader=False) 

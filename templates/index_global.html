@@ -138,6 +138,17 @@
     </div>
     {% endif %}
 
+    {% if total_charts == 0 %}
+    <div class="category-stats" style="margin-top: 20px; border-left: 4px solid #667eea;">
+        <h3>🔧 Database not showing data?</h3>
+        <p>If you expect charts to appear here:</p>
+        <ul>
+            <li>Check <a href="{{ url_for('api_status') }}" target="_blank"><strong>/api/status</strong></a> for connection and RLS hints.</li>
+            <li>In Supabase Dashboard → SQL Editor, run the script <code>migrations/supabase_rls_anon_policies.sql</code> so the app (anon key) can read and write.</li>
+        </ul>
+    </div>
+    {% endif %}
+
     <div style="margin-top: 40px; text-align: center; color: #666;">
         <p><strong>Features:</strong> Global timezone support • Google Geocoding • Swiss Ephemeris calculations • Research categorization</p>
     </div>

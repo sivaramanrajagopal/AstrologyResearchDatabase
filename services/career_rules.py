@@ -614,13 +614,13 @@ def career_rules(
         d10_lord_rasi = d10[tenth_lord].get("rasi")
         d10_lord_house = _d10_house_for_planet(d10, tenth_lord)
         strong_in_d10 = (d10_lord_rasi == EXALTATION.get(tenth_lord) or d10_lord_rasi in OWN_SIGNS.get(tenth_lord, []))
-        good_house_d10 = d10_lord_house in (1, 4, 5, 7, 9, 10, 11) if d10_lord_house else False
+        good_house_d10 = d10_lord_house in (1, 2, 4, 5, 7, 9, 10, 11) if d10_lord_house else False
         if strong_in_d10 and good_house_d10:
             factors.append("D10_10th_lord_transposition_strong")
             scores["d10_10th_lord_transposition"] = 1.0
             meta = _rule_meta("D10_10th_lord_transposition")
             applied_rules.append({"rule_id": "D10_10th_lord_transposition", "name": meta["name"], "explanation": meta["explanation"], "score": 1.0})
-        elif tenth_lord and scores.get("d1_10th_lord_placement") and not strong_in_d10 and d10_lord_house not in (1, 4, 5, 7, 9, 10, 11):
+        elif tenth_lord and scores.get("d1_10th_lord_placement") and not strong_in_d10 and d10_lord_house not in (1, 2, 4, 5, 7, 9, 10, 11):
             factors.append("D10_10th_lord_weak")
             meta = _rule_meta("D10_10th_lord_weak")
             applied_rules.append({"rule_id": "D10_10th_lord_weak", "name": meta["name"], "explanation": meta["explanation"], "score": 0.2})

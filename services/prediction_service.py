@@ -140,7 +140,7 @@ class PredictionService:
         spread = max(scores_only) - min(scores_only) if len(scores_only) > 1 else scores_only[0]
         spread_factor = min(100, spread * 2)
         strong_indicators = 0
-        if d1_analysis.get("tenth_lord_house") in (1, 4, 5, 7, 9, 10, 11):
+        if d1_analysis.get("tenth_lord_house") in (1, 2, 4, 5, 7, 9, 10, 11):
             strong_indicators += 20
         if d10_analysis.get("vargottama"):
             strong_indicators += min(30, len(d10_analysis["vargottama"]) * 10)

@@ -10,8 +10,9 @@ from typing import Dict, List, Optional
 import json
 from datetime import datetime
 
-# Load environment variables
-load_dotenv()
+# Load .env from project root so it works when run from any directory
+_root = os.path.dirname(os.path.abspath(__file__))
+load_dotenv(os.path.join(_root, ".env"), override=False)
 
 class SupabaseManager:
     def __init__(self):
@@ -21,7 +22,14 @@ class SupabaseManager:
         if not self.url or not self.key:
             raise ValueError("SUPABASE_URL and SUPABASE_ANON_KEY must be set in environment variables")
         
-        self.supabase: Client = create_client(self.url, self.key)
+        # Timeout so DB requests fail fast instead of hanging (Errno 60) on slow/unreachable Supabase
+        _timeout = 12
+        try:
+            from supabase.lib.client_options import SyncClientOptions
+            opts = SyncClientOptions(postgrest_client_timeout=_timeout)
+            self.supabase: Client = create_client(self.url, self.key, options=opts)
+        except Exception:
+            self.supabase: Client = create_client(self.url, self.key)
     
     def insert_birth_chart(self, chart_data: Dict) -> Optional[Dict]:
         """
@@ -123,21 +131,36 @@ class SupabaseManager:
     
     def get_statistics(self) -> Dict:
         """
-        Get database statistics
+        Get database statistics. Uses a lightweight count query and a limited
+        category query so the index page doesn't timeout on slow networks.
         """
         try:
-            # Get total count
-            total_result = self.supabase.table('astrology_charts').select('id', count='exact').execute()
-            total_charts = total_result.count if total_result.count else 0
-            
-            # Get category counts
-            category_result = self.supabase.table('astrology_charts').select('primary_category').execute()
+            # 1) Lightweight total count (no row data) – avoids fetching all rows
+            total_charts = 0
+            try:
+                count_result = self.supabase.table('astrology_charts').select(
+                    '*', count='exact', head=True
+                ).execute()
+                total_charts = getattr(count_result, 'count', None)
+                if total_charts is None:
+                    total_charts = 0
+            except Exception:
+                pass
+            # 2) Category breakdown from a limited sample (max 5000 rows) so request stays fast
             category_counts = {}
-            
-            for chart in category_result.data:
-                category = chart.get('primary_category', 'Unknown')
-                category_counts[category] = category_counts.get(category, 0) + 1
-            
+            try:
+                category_result = self.supabase.table('astrology_charts').select(
+                    'primary_category'
+                ).limit(5000).execute()
+                data = category_result.data if category_result.data is not None else []
+                for chart in data:
+                    category = chart.get('primary_category') or 'Unknown'
+                    category_counts[category] = category_counts.get(category, 0) + 1
+                # If we have a count but limited category sample, total stays from count query
+                if total_charts == 0 and data:
+                    total_charts = len(data)
+            except Exception as e:
+                print(f"Error getting category stats: {e}")
             return {
                 'total_charts': total_charts,
                 'category_counts': category_counts

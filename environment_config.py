@@ -12,5 +12,6 @@ os.environ['GOOGLE_MAPS_API_KEY'] = 'AIzaSyCYM1jG3VT8D4gTtwkxNK1RaOzEgdmLbs4'
 os.environ['SECRET_KEY'] = 'global_astrology_secret_key_2024_secure_random_string'
 
 print("✅ Environment variables set successfully!")
-print(f"Supabase URL: {os.environ.get('SUPABASE_URL')}")
-print(f"Google Maps API Key: {os.environ.get('GOOGLE_MAPS_API_KEY')[:20]}...") 
+print(f"Supabase URL: {os.environ.get('SUPABASE_URL', '(not set)')}")
+key = os.environ.get('GOOGLE_MAPS_API_KEY') or ''
+print(f"Google Maps API Key: {(key[:20] + '...') if len(key) > 20 else key or '(not set)'}") 

@@ -32,8 +32,8 @@ RULE_WEIGHTS = {
     "rule_planet_strength_d10": 18,
 }
 
-# Good houses for 10th lord (Kendra + 5,9,11)
-GOOD_HOUSES_10TH_LORD = {1, 4, 5, 7, 9, 10, 11}
+# Good houses for 10th lord (Kendra 1,4,7,10 + Trikona 5,9 + 2nd wealth/speech + 11th gains; Parasara/traditional)
+GOOD_HOUSES_10TH_LORD = {1, 2, 4, 5, 7, 9, 10, 11}
 
 
 def _planet_career_scores(planets: List[str], weight: float) -> Dict[str, float]:
