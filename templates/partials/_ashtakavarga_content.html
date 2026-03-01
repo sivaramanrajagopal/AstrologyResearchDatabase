@@ -1,251 +1,190 @@
-<!-- SAV Summary Card -->
-<div class="info-card mb-4" style="background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);">
-    <h3>🌟 Sarvashtakavarga (SAV) - Combined Strength</h3>
-    <div class="info-grid">
-        <div class="sav-item">
-            <div class="label">Total SAV Points</div>
-            <div class="value">{{ sav_data.total }} / 337</div>
-        </div>
-        <div class="sav-item">
-            <div class="label">10th House (Career)</div>
-            <div class="value {% if sav_data.chart[9] >= 30 %}text-success{% elif sav_data.chart[9] < 25 %}text-danger{% endif %}">
-                {{ sav_data.chart[9] }} points
-                {% if sav_data.chart[9] >= 30 %}
-                    ✅ Strong
-                {% elif sav_data.chart[9] >= 25 %}
-                    ⚠️ Moderate
-                {% else %}
-                    ❌ Weak
-                {% endif %}
+{# Prokerala-style 4×4 square matrix – ref: Ashtavargam ashtakavarga_prokerala.html #}
+{% set rasi_names = ["Mesha", "Rishaba", "Mithuna", "Kataka", "Simha", "Kanni", "Thula", "Vrischika", "Dhanus", "Makara", "Kumbha", "Meena"] %}
+{% set planet_order = ["SUN", "MOON", "MARS", "MERCURY", "JUPITER", "VENUS", "SATURN"] %}
+{% set planet_labels = [
+    ("Sun", "☉"), ("Moon", "☽"), ("Mars", "♂"), ("Mercury", "☿"),
+    ("Jupiter", "♃"), ("Venus", "♀"), ("Saturn", "♄")
+] %}
+{# South Indian fixed layout: Top 12,1,2,3 | Row2 11,center,center,4 | Row3 10,center,center,5 | Bottom 9,8,7,6 → chart indices #}
+{% set sav_cells = [
+    (11, "top-1"), (0, "top-2"), (1, "top-3"), (2, "top-4"),
+    (10, "middle-left"), (3, "middle-right"), (9, "row3-left"), (4, "row3-right"),
+    (8, "bottom-1"), (7, "bottom-2"), (6, "bottom-3"), (5, "bottom-4")
+] %}
+
+<div class="av-prokerala">
+    <h4 class="av-title">Ashtakavarga – Prokerala style</h4>
+    <p class="av-subtitle">அஷ்டகவர்கம் (4×4 matrix)</p>
+
+    <div class="av-summary-row">
+        <span class="av-summary-item"><strong>Total SAV</strong> {{ sav_data.total }} / 337</span>
+        <span class="av-summary-item"><strong>Average</strong> {{ "%.1f"|format(sav_data.total / 12) }}</span>
+    </div>
+
+    <!-- SAV: 4×4 square grid (12 outer + center 2×2) -->
+    <div class="av-section">
+        <h5 class="av-section-title">Sarvashtakavarga (SAV)</h5>
+        <div class="av-grid-wrap">
+            <div class="sav-grid">
+                {% for rasi_idx, pos_class in sav_cells %}
+                {% set v = sav_data.chart[rasi_idx] %}
+                <div class="sav-cell {{ pos_class }} {% if v >= 30 %}high{% elif v >= 25 %}medium{% else %}low{% endif %}" title="{{ rasi_names[rasi_idx] }}: {{ v }}">{{ v }}</div>
+                {% endfor %}
+                <div class="sav-cell central" title="Sarvashtakavarga Total">
+                    <span class="central-title">Sarva</span>
+                    <span class="central-total">{{ sav_data.total }}</span>
+                </div>
             </div>
         </div>
-        <div class="sav-item">
-            <div class="label">Average per Rasi</div>
-            <div class="value">{{ "%.1f"|format(sav_data.total / 12) }}</div>
+    </div>
+
+    <!-- BAV: one 4×4 square grid per planet -->
+    <div class="av-section">
+        <h5 class="av-section-title">Binnashtakavarga (BAV)</h5>
+        <div class="bav-grids-wrap">
+            {% for pidx in range(7) %}
+            {% set pkey = planet_order[pidx] %}
+            {% set plab = planet_labels[pidx] %}
+            <div class="bav-grid-card">
+                <div class="bav-grid-label"><span class="av-sym">{{ plab[1] }}</span> {{ plab[0] }}</div>
+                <div class="bav-grid">
+                    {% for rasi_idx, pos_class in sav_cells %}
+                    {% set v = bav_data[pkey].chart[rasi_idx] %}
+                    <div class="bav-cell {{ pos_class }} {% if v >= 6 %}high{% elif v >= 4 %}medium{% else %}low{% endif %}" title="{{ rasi_names[rasi_idx] }}: {{ v }}">{{ v }}</div>
+                    {% endfor %}
+                    <div class="bav-cell central">
+                        <span class="central-name">{{ plab[0] }}</span>
+                        <span class="central-total">{{ bav_data[pkey].total }}</span>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
         </div>
+        <p class="av-legend">High 6+ &nbsp; Medium 4-5 &nbsp; Low 0-3</p>
     </div>
-</div>
-
-<!-- SAV Chart by Rasi -->
-<div class="info-card">
-    <h3>📊 Sarvashtakavarga by Rasi</h3>
-    <div class="ashtakavarga-table">
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>Rasi</th>
-                    <th>सूर्य<br>Sun</th>
-                    <th>चन्द्र<br>Moon</th>
-                    <th>मंगल<br>Mars</th>
-                    <th>बुध<br>Mercury</th>
-                    <th>गुरु<br>Jupiter</th>
-                    <th>शुक्र<br>Venus</th>
-                    <th>शनि<br>Saturn</th>
-                    <th><strong>SAV Total</strong></th>
-                </tr>
-            </thead>
-            <tbody>
-                {% set rasi_names = ["Mesha", "Rishaba", "Mithuna", "Kataka", "Simha", "Kanni", "Thula", "Vrischika", "Dhanus", "Makara", "Kumbha", "Meena"] %}
-                {% for i in range(12) %}
-                <tr {% if i == 9 %}class="highlight-row"{% endif %}>
-                    <td><strong>{{ i + 1 }}. {{ rasi_names[i] }}</strong></td>
-                    <td>{{ sav_data.by_planet.SUN[i] }}</td>
-                    <td>{{ sav_data.by_planet.MOON[i] }}</td>
-                    <td>{{ sav_data.by_planet.MARS[i] }}</td>
-                    <td>{{ sav_data.by_planet.MERCURY[i] }}</td>
-                    <td>{{ sav_data.by_planet.JUPITER[i] }}</td>
-                    <td>{{ sav_data.by_planet.VENUS[i] }}</td>
-                    <td>{{ sav_data.by_planet.SATURN[i] }}</td>
-                    <td>
-                        <strong
-                            {% if sav_data.chart[i] >= 30 %}class="text-success"
-                            {% elif sav_data.chart[i] < 25 %}class="text-danger"
-                            {% endif %}>
-                            {{ sav_data.chart[i] }}
-                        </strong>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-            <tfoot>
-                <tr style="background: #f8f9fa; font-weight: bold;">
-                    <td>Total</td>
-                    <td>{{ bav_data.SUN.total }}</td>
-                    <td>{{ bav_data.MOON.total }}</td>
-                    <td>{{ bav_data.MARS.total }}</td>
-                    <td>{{ bav_data.MERCURY.total }}</td>
-                    <td>{{ bav_data.JUPITER.total }}</td>
-                    <td>{{ bav_data.VENUS.total }}</td>
-                    <td>{{ bav_data.SATURN.total }}</td>
-                    <td><strong>{{ sav_data.total }}</strong></td>
-                </tr>
-            </tfoot>
-        </table>
-    </div>
-</div>
-
-<!-- BAV Individual Planet Charts -->
-<div class="info-card mt-4">
-    <h3>📋 Binnashtakavarga (BAV) - Individual Planet Strength</h3>
-
-    {% set planets = [
-        ('SUN', 'सूर्य Sun', '☀️'),
-        ('MOON', 'चन्द्र Moon', '🌙'),
-        ('MARS', 'मंगल Mars', '♂️'),
-        ('MERCURY', 'बुध Mercury', '☿️'),
-        ('JUPITER', 'गुरु Jupiter', '♃'),
-        ('VENUS', 'शुक्र Venus', '♀️'),
-        ('SATURN', 'शनि Saturn', '♄')
-    ] %}
-
-    {% for planet_key, planet_name, emoji in planets %}
-    <div class="planet-bav-section mb-4">
-        <h4>{{ emoji }} {{ planet_name }} Binnashtakavarga (Total: {{ bav_data[planet_key].total }})</h4>
-        <div class="bav-chart">
-            <table class="table table-sm">
-                <thead>
-                    <tr>
-                        <th>Rasi</th>
-                        {% for i in range(12) %}
-                        <th>{{ i + 1 }}</th>
-                        {% endfor %}
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td><strong>Points</strong></td>
-                        {% for i in range(12) %}
-                        <td {% if bav_data[planet_key].chart[i] >= 4 %}class="text-success"
-                            {% elif bav_data[planet_key].chart[i] <= 2 %}class="text-danger"
-                            {% endif %}>
-                            <strong>{{ bav_data[planet_key].chart[i] }}</strong>
-                        </td>
-                        {% endfor %}
-                    </tr>
-                    <tr>
-                        <td><strong>Rasi</strong></td>
-                        {% for rasi_name in rasi_names %}
-                        <td><small>{{ rasi_name[:3] }}</small></td>
-                        {% endfor %}
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
-    {% endfor %}
-</div>
-
-<!-- Interpretation -->
-<div class="info-card mt-4">
-    <h3>ℹ️ Understanding Ashtakavarga</h3>
-    <p style="line-height: 1.8; color: #555; margin-bottom: 15px;">
-        <strong>Ashtakavarga</strong> is a quantitative system in Vedic astrology that assigns points (bindus) to each house based on planetary positions. It provides an objective measure of strength for different life areas.
-    </p>
-    <p style="line-height: 1.8; color: #555; margin-bottom: 15px;">
-        <strong>Binnashtakavarga (BAV):</strong> Shows individual planet's benefic influence across all 12 houses. Higher points indicate stronger results from that planet in that house.
-    </p>
-    <p style="line-height: 1.8; color: #555; margin-bottom: 15px;">
-        <strong>Sarvashtakavarga (SAV):</strong> Combined strength from all 7 planets. The 10th house SAV is especially important for career success:
-    </p>
-    <ul style="line-height: 1.8; color: #555;">
-        <li><strong>30+ points:</strong> ✅ Excellent career strength - Strong professional success</li>
-        <li><strong>25-29 points:</strong> ⚠️ Moderate career strength - Average professional outcomes</li>
-        <li><strong>Below 25:</strong> ❌ Weak career strength - May face obstacles in profession</li>
-    </ul>
-    <p style="line-height: 1.8; color: #555; margin-top: 15px;">
-        <strong>Your 10th House SAV:</strong>
-        <span style="font-size: 1.2em; font-weight: bold; color:
-            {% if sav_data.chart[9] >= 30 %}#28a745
-            {% elif sav_data.chart[9] >= 25 %}#ffc107
-            {% else %}#dc3545
-            {% endif %};">
-            {{ sav_data.chart[9] }} points
-        </span>
-        {% if sav_data.chart[9] >= 30 %}
-            - Excellent career potential!
-        {% elif sav_data.chart[9] >= 25 %}
-            - Moderate career strength
-        {% else %}
-            - Career may require extra effort
-        {% endif %}
-    </p>
 </div>
 
 <style>
-    .info-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 15px;
-        margin-top: 15px;
-    }
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Tamil:wght@400;600&display=swap');
+.av-prokerala { font-size: 0.9rem; }
+.av-title { margin-bottom: 0.2rem; color: #333; }
+.av-subtitle { font-size: 0.85rem; color: #666; margin-bottom: 0.75rem; font-family: 'Noto Sans Tamil', sans-serif; }
+.av-summary-row { display: flex; flex-wrap: wrap; gap: 1rem; margin-bottom: 1rem; }
+.av-summary-item { font-size: 0.9rem; }
+.av-section { margin-bottom: 1.5rem; }
+.av-section-title { margin: 0 0 0.75rem 0; font-size: 1rem; color: #4a90e2; border-bottom: 2px solid #4a90e2; padding-bottom: 6px; }
+.av-sym { margin-right: 2px; }
 
-    .sav-item {
-        background: white;
-        padding: 15px;
-        border-radius: 8px;
-        text-align: center;
-    }
+/* SAV 4×4 grid */
+.av-grid-wrap { display: flex; justify-content: center; margin: 1rem 0; }
+.sav-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 72px);
+    grid-template-rows: repeat(4, 72px);
+    gap: 4px;
+    background: #f0f0f0;
+    padding: 10px;
+    border-radius: 10px;
+    width: fit-content;
+}
+.sav-cell {
+    background: #fff;
+    border: 2px solid #ddd;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    font-weight: bold;
+    color: #333;
+    min-width: 72px;
+    min-height: 72px;
+}
+.sav-cell.top-1 { grid-column: 1; grid-row: 1; }
+.sav-cell.top-2 { grid-column: 2; grid-row: 1; }
+.sav-cell.top-3 { grid-column: 3; grid-row: 1; }
+.sav-cell.top-4 { grid-column: 4; grid-row: 1; }
+.sav-cell.middle-left { grid-column: 1; grid-row: 2; }
+.sav-cell.middle-right { grid-column: 4; grid-row: 2; }
+.sav-cell.row3-left { grid-column: 1; grid-row: 3; }
+.sav-cell.row3-right { grid-column: 4; grid-row: 3; }
+.sav-cell.bottom-1 { grid-column: 1; grid-row: 4; }
+.sav-cell.bottom-2 { grid-column: 2; grid-row: 4; }
+.sav-cell.bottom-3 { grid-column: 3; grid-row: 4; }
+.sav-cell.bottom-4 { grid-column: 4; grid-row: 4; }
+.sav-cell.high { background: #c8e6c9; color: #2e7d32; }
+.sav-cell.medium { background: #fff9c4; color: #f57f17; }
+.sav-cell.low { background: #ffcdd2; color: #c62828; }
+.sav-cell.central {
+    grid-column: 2 / 4;
+    grid-row: 2 / 4;
+    background: #fff9e6;
+    border: 3px solid #ffd700;
+    flex-direction: column;
+    padding: 8px;
+    font-size: 14px;
+}
+.sav-cell.central .central-title { color: #d32f2f; font-weight: bold; font-size: 14px; margin-bottom: 4px; }
+.sav-cell.central .central-total { color: #333; font-size: 18px; }
 
-    .sav-item .label {
-        font-size: 0.9em;
-        color: #666;
-        margin-bottom: 8px;
-    }
-
-    .sav-item .value {
-        font-size: 1.5em;
-        font-weight: bold;
-        color: #333;
-    }
-
-    .highlight-row {
-        background: #fff3cd !important;
-        font-weight: bold;
-    }
-
-    .planet-bav-section {
-        background: #f8f9fa;
-        padding: 15px;
-        border-radius: 8px;
-        border-left: 4px solid #667eea;
-    }
-
-    .planet-bav-section h4 {
-        color: #667eea;
-        margin-bottom: 10px;
-        font-size: 1.1em;
-    }
-
-    .bav-chart table {
-        background: white;
-        margin-bottom: 0;
-    }
-
-    .text-success {
-        color: #28a745 !important;
-        font-weight: bold;
-    }
-
-    .text-danger {
-        color: #dc3545 !important;
-    }
-
-    .ashtakavarga-table {
-        overflow-x: auto;
-    }
-
-    .ashtakavarga-table table {
-        font-size: 0.9em;
-    }
-
-    .ashtakavarga-table th {
-        text-align: center;
-        font-size: 0.85em;
-        padding: 8px 4px;
-    }
-
-    .ashtakavarga-table td {
-        text-align: center;
-        padding: 8px 4px;
-    }
+/* BAV 4×4 grids */
+.bav-grids-wrap {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 1rem;
+    justify-items: center;
+}
+.bav-grid-card { text-align: center; }
+.bav-grid-label { font-weight: bold; margin-bottom: 6px; color: #333; font-size: 0.95rem; }
+.bav-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 52px);
+    grid-template-rows: repeat(4, 52px);
+    gap: 3px;
+    background: #f0f0f0;
+    padding: 8px;
+    border-radius: 8px;
+    width: fit-content;
+    margin: 0 auto;
+}
+.bav-cell {
+    background: #fff;
+    border: 2px solid #ddd;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: bold;
+    color: #333;
+    min-width: 52px;
+    min-height: 52px;
+}
+.bav-cell.top-1 { grid-column: 1; grid-row: 1; }
+.bav-cell.top-2 { grid-column: 2; grid-row: 1; }
+.bav-cell.top-3 { grid-column: 3; grid-row: 1; }
+.bav-cell.top-4 { grid-column: 4; grid-row: 1; }
+.bav-cell.middle-left { grid-column: 1; grid-row: 2; }
+.bav-cell.middle-right { grid-column: 4; grid-row: 2; }
+.bav-cell.row3-left { grid-column: 1; grid-row: 3; }
+.bav-cell.row3-right { grid-column: 4; grid-row: 3; }
+.bav-cell.bottom-1 { grid-column: 1; grid-row: 4; }
+.bav-cell.bottom-2 { grid-column: 2; grid-row: 4; }
+.bav-cell.bottom-3 { grid-column: 3; grid-row: 4; }
+.bav-cell.bottom-4 { grid-column: 4; grid-row: 4; }
+.bav-cell.high { background: #c8e6c9; color: #2e7d32; }
+.bav-cell.medium { background: #fff9c4; color: #f57f17; }
+.bav-cell.low { background: #ffcdd2; color: #c62828; }
+.bav-cell.central {
+    grid-column: 2 / 4;
+    grid-row: 2 / 4;
+    background: #fff9e6;
+    border: 2px solid #ffd700;
+    flex-direction: column;
+    padding: 4px;
+    font-size: 11px;
+}
+.bav-cell.central .central-name { color: #d32f2f; font-weight: bold; font-size: 11px; margin-bottom: 2px; }
+.bav-cell.central .central-total { color: #333; font-size: 14px; }
+.av-legend { font-size: 0.8rem; color: #666; margin: 0.5rem 0 0 0; text-align: center; }
 </style>

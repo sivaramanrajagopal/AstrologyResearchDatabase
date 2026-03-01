@@ -68,7 +68,7 @@
                     </div>
                 </div>
 
-                <div class="score-value-display">{{ score.value }}</div>
+                <div class="score-value-display">{{ "%.2f"|format(score.value) }}</div>
 
                 <div class="score-explanation">
                     {{ score.explanation }}

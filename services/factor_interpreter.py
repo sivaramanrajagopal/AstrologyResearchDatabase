@@ -202,9 +202,11 @@ def interpret_score(score_key: str, score_value: float) -> Dict[str, str]:
         strength = 'Weak'
         color = 'secondary'
 
+    # Round to 2 decimal places for clean display (avoids 0.29700000000000004 etc.)
+    rounded_value = round(score_value, 2) if isinstance(score_value, (int, float)) else score_value
     return {
         'key': score_key,
-        'value': score_value,
+        'value': rounded_value,
         'explanation': explanation,
         'strength': strength,
         'color': color,

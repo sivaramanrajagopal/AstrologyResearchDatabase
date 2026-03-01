@@ -274,6 +274,8 @@ def _chart_to_south_indian_houses(chart: dict) -> tuple:
     for pname, pdata in chart.items():
         if pname.startswith("_") or not isinstance(pdata, dict) or "longitude" not in pdata:
             continue
+        if pname in ("Ascendant", "ascendant"):
+            continue  # Lagna is shown via is_lagna marker only; do not list as planet in a house
         try:
             lon = float(pdata["longitude"]) % 360
         except (TypeError, ValueError):
@@ -368,6 +370,7 @@ def charts_interpretation(chart_id: int):
     """
     import os
     import sys
+    import traceback
     root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     if root not in sys.path:
         sys.path.insert(0, root)
@@ -383,7 +386,13 @@ def charts_interpretation(chart_id: int):
     row = supabase_manager.get_birth_chart(chart_id)
     if not row:
         raise HTTPException(status_code=404, detail="Chart not found")
-    d1 = _get_d1_from_db(chart_id)
+    try:
+        d1 = _get_d1_from_db(chart_id)
+    except Exception as e:
+        return HTMLResponse(
+            f"<html><body style='font-family:sans-serif;padding:20px;'><h1>Error loading chart</h1><p>Chart data could not be loaded: {e!s}</p><pre>{traceback.format_exc()}</pre></body></html>",
+            status_code=500,
+        )
     d9 = calculate_d9_chart(d1)
     d10 = calculate_d10_chart(d1)
 
@@ -421,10 +430,18 @@ def charts_interpretation(chart_id: int):
         bav_sav_full = None
 
     result = career_rules(d1, d10, dasha_current=dasha_current, bav_sav_full=bav_sav_full)
-    # Use fixed-sign chart layout (signs don't rotate, Lagna marker shows ascendant)
+    chart_summary = result.get("chart_summary") or {}
+    scores = result.get("scores") or {}
+    factor_summary = None
+    try:
+        from services.factor_interpreter import get_factor_summary
+        factor_summary = get_factor_summary([], scores)
+    except Exception:
+        factor_summary = None
+    # D1: fixed-sign layout (signs don't rotate). D9/D10: house-based layout (Lagna = House 1, planets by house).
     houses_d1, lagna_rasi_d1 = _d1_to_south_indian_fixed_sign(d1)
-    houses_d9, lagna_rasi_d9 = _d1_to_south_indian_fixed_sign(d9)
-    houses_d10, lagna_rasi_d10 = _d1_to_south_indian_fixed_sign(d10)
+    houses_d9, lagna_rasi_d9 = _chart_to_south_indian_houses(d9)
+    houses_d10, lagna_rasi_d10 = _chart_to_south_indian_houses(d10)
     for c in houses_d1:
         if c.get("type") == "center":
             c["title"] = "ராசி [D1]"
@@ -466,26 +483,33 @@ def charts_interpretation(chart_id: int):
             profession_suggestion = [c[0] for c in ranked[:8]] if ranked else []
         except Exception:
             pass
-    from jinja2 import Environment, FileSystemLoader
-    env = Environment(loader=FileSystemLoader(os.path.join(root, "api", "templates")))
-    tpl = env.get_template("interpretation.html")
-    html = tpl.render(
-        name=row.get("name"),
-        dob=row.get("date_of_birth"),
-        tob=row.get("time_of_birth"),
-        place=row.get("place_of_birth"),
-        houses_d1=houses_d1,
-        houses_d9=houses_d9,
-        houses_d10=houses_d10,
-        lagna_rasi_d1=lagna_rasi_d1 or "",
-        lagna_rasi_d9=lagna_rasi_d9 or "",
-        lagna_rasi_d10=lagna_rasi_d10 or "",
-        rules_checklist=rules_checklist,
-        rules_grouped=rules_grouped,
-        rules_score=rules_score,
-        career_strength=result.get("career_strength", ""),
-        profession_suggestion=profession_suggestion,
-        profession_probabilities=profession_probabilities,
-        chart_summary=result.get("chart_summary", {}),
-    )
-    return HTMLResponse(html)
+    try:
+        from jinja2 import Environment, FileSystemLoader
+        env = Environment(loader=FileSystemLoader(os.path.join(root, "api", "templates")))
+        tpl = env.get_template("interpretation.html")
+        html = tpl.render(
+            name=row.get("name"),
+            dob=row.get("date_of_birth"),
+            tob=row.get("time_of_birth"),
+            place=row.get("place_of_birth"),
+            houses_d1=houses_d1,
+            houses_d9=houses_d9,
+            houses_d10=houses_d10,
+            lagna_rasi_d1=lagna_rasi_d1 or "",
+            lagna_rasi_d9=lagna_rasi_d9 or "",
+            lagna_rasi_d10=lagna_rasi_d10 or "",
+            rules_checklist=rules_checklist,
+            rules_grouped=rules_grouped,
+            rules_score=rules_score,
+            career_strength=result.get("career_strength", ""),
+            profession_suggestion=profession_suggestion,
+            profession_probabilities=profession_probabilities,
+            chart_summary=chart_summary,
+            factor_summary=factor_summary,
+        )
+        return HTMLResponse(html)
+    except Exception as e:
+        return HTMLResponse(
+            f"<html><body style='font-family:sans-serif;padding:20px;'><h1>Error rendering interpretation</h1><p>{e!s}</p><pre>{traceback.format_exc()}</pre></body></html>",
+            status_code=500,
+        )

@@ -5,6 +5,15 @@ Output: structured scores, contributing factors, and applied_rules (with names a
 """
 from typing import Dict, Any, List, Optional
 
+
+def _round_score(v: Any, ndigits: int = 2) -> Any:
+    """Round numeric scores to avoid float display noise (e.g. 0.29700000000000004 → 0.3)."""
+    if v is None:
+        return v
+    if isinstance(v, (int, float)):
+        return round(float(v), ndigits)
+    return v
+
 # Import additional Parasara career rules
 try:
     from services.additional_career_rules import (
@@ -1724,6 +1733,15 @@ def career_rules(
     matched_count = sum(1 for r in rules_checklist if r["matched"])
     total_rules = len(rules_checklist)
     rules_score = f"{matched_count}/{total_rules}"
+
+    # Round all numeric scores to 2 decimals (avoids 0.29700000000000004, 0.7500000000000001 in UI/exports)
+    scores = {k: _round_score(v) for k, v in scores.items()}
+    for r in applied_rules:
+        if "score" in r and isinstance(r["score"], (int, float)):
+            r["score"] = _round_score(r["score"])
+    for r in rules_checklist:
+        if "score" in r and isinstance(r["score"], (int, float)):
+            r["score"] = _round_score(r["score"])
 
     return {
         "career_strength": career_strength,

@@ -1,0 +1,821 @@
+<!-- Simplified & Research-Oriented Career Analysis Dashboard -->
+<style>
+    .career-dashboard {
+        padding: 20px;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .strength-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 30px;
+        border-radius: 15px;
+        margin-bottom: 25px;
+        box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+    }
+
+    .strength-header h2 {
+        margin: 0 0 20px 0;
+        font-size: 24px;
+    }
+
+    .strength-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 15px;
+    }
+
+    .stat-item {
+        text-align: center;
+        padding: 15px;
+        background: rgba(255,255,255,0.15);
+        border-radius: 10px;
+    }
+
+    .stat-label {
+        font-size: 12px;
+        opacity: 0.9;
+        margin-bottom: 5px;
+    }
+
+    .stat-value {
+        font-size: 24px;
+        font-weight: bold;
+    }
+
+    .insights-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 20px;
+        margin-bottom: 25px;
+    }
+
+    .insight-card {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        border-left: 4px solid;
+    }
+
+    .insight-card.excellent { border-color: #4CAF50; }
+    .insight-card.good { border-color: #2196F3; }
+    .insight-card.moderate { border-color: #FF9800; }
+
+    .insight-title {
+        font-size: 14px;
+        color: #666;
+        margin-bottom: 8px;
+    }
+
+    .insight-value {
+        font-size: 22px;
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 10px;
+    }
+
+    .insight-desc {
+        font-size: 13px;
+        color: #777;
+        line-height: 1.5;
+    }
+
+    .section-card {
+        background: white;
+        border-radius: 12px;
+        padding: 25px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    }
+
+    .section-card h3 {
+        margin: 0 0 20px 0;
+        color: #333;
+        font-size: 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .career-fields {
+        display: grid;
+        gap: 15px;
+    }
+
+    .career-field {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        padding: 15px;
+        background: #f8f9fa;
+        border-radius: 8px;
+        transition: all 0.3s;
+        cursor: pointer;
+    }
+
+    .career-field:hover {
+        background: #e9ecef;
+        transform: translateX(5px);
+    }
+
+    .field-rank {
+        font-size: 24px;
+        font-weight: bold;
+        color: #999;
+        min-width: 30px;
+    }
+
+    .field-info {
+        flex: 1;
+    }
+
+    .field-name {
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 4px;
+    }
+
+    .field-desc {
+        font-size: 12px;
+        color: #666;
+    }
+
+    .field-score {
+        font-size: 20px;
+        font-weight: bold;
+        min-width: 60px;
+        text-align: right;
+    }
+
+    .field-score.high { color: #4CAF50; }
+    .field-score.medium { color: #FF9800; }
+    .field-score.low { color: #999; }
+
+    .field-bar {
+        width: 100%;
+        height: 4px;
+        background: #e0e0e0;
+        border-radius: 2px;
+        overflow: hidden;
+        margin-top: 8px;
+    }
+
+    .field-bar-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #4CAF50, #8BC34A);
+        transition: width 0.5s ease;
+    }
+
+    /* Rules Checklist - Grouped by Chart Type */
+    .rules-checklist-section {
+        background: white;
+        border-radius: 12px;
+        padding: 25px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    }
+
+    .rule-group {
+        margin-bottom: 25px;
+        padding: 20px;
+        background: #f8f9fa;
+        border-radius: 10px;
+        border-left: 5px solid;
+    }
+
+    .rule-group.d1-rules { border-color: #2196F3; }
+    .rule-group.d10-rules { border-color: #4CAF50; }
+    .rule-group.dasha-rules { border-color: #FF9800; }
+    .rule-group.sav-rules { border-color: #9C27B0; }
+
+    .rule-group-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+    }
+
+    .rule-group-title {
+        font-size: 18px;
+        font-weight: bold;
+        color: #333;
+    }
+
+    .rule-group-stats {
+        font-size: 14px;
+        color: #666;
+    }
+
+    .rule-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 12px;
+        background: white;
+        border-radius: 6px;
+        margin-bottom: 10px;
+    }
+
+    .rule-status {
+        font-size: 20px;
+        min-width: 24px;
+    }
+
+    .rule-status.passed { color: #4CAF50; }
+    .rule-status.failed { color: #E53935; }
+
+    .rule-content {
+        flex: 1;
+    }
+
+    .rule-name {
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 4px;
+    }
+
+    .rule-explanation {
+        font-size: 13px;
+        color: #666;
+        line-height: 1.5;
+    }
+
+    .rule-score {
+        font-weight: bold;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+        background: #e0e0e0;
+        color: #333;
+    }
+
+    .rule-tags {
+        display: flex;
+        gap: 6px;
+        margin-top: 8px;
+        flex-wrap: wrap;
+    }
+
+    .rule-tag {
+        display: inline-block;
+        padding: 3px 8px;
+        border-radius: 4px;
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    .rule-tag.d1 { background: #E3F2FD; color: #1976D2; }
+    .rule-tag.d10 { background: #E8F5E9; color: #388E3C; }
+    .rule-tag.dasha { background: #FFF3E0; color: #F57C00; }
+    .rule-tag.sav { background: #F3E5F5; color: #7B1FA2; }
+    .rule-tag.comparison { background: #FFF9C4; color: #F57F17; }
+    .rule-tag.validated { background: #C8E6C9; color: #2E7D32; border: 1px solid #4CAF50; }
+
+    /* Modal Styles */
+    .modal-backdrop {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.5);
+        z-index: 1000;
+        overflow-y: auto;
+    }
+
+    .modal-backdrop.active {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+    }
+
+    .modal-content {
+        background: white;
+        border-radius: 15px;
+        max-width: 800px;
+        width: 100%;
+        max-height: 90vh;
+        overflow-y: auto;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+    }
+
+    .modal-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 20px 25px;
+        border-radius: 15px 15px 0 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .modal-header h3 {
+        margin: 0;
+        font-size: 22px;
+    }
+
+    .modal-close {
+        background: none;
+        border: none;
+        color: white;
+        font-size: 28px;
+        cursor: pointer;
+        padding: 0;
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .modal-body {
+        padding: 25px;
+    }
+
+    .rationale-section {
+        margin-bottom: 25px;
+    }
+
+    .rationale-title {
+        font-size: 18px;
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 15px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #e0e0e0;
+    }
+
+    .planet-influence {
+        display: flex;
+        gap: 15px;
+        padding: 15px;
+        background: #f8f9fa;
+        border-radius: 8px;
+        margin-bottom: 12px;
+        border-left: 4px solid #667eea;
+    }
+
+    .planet-icon {
+        font-size: 32px;
+        min-width: 40px;
+    }
+
+    .planet-details {
+        flex: 1;
+    }
+
+    .planet-name {
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 6px;
+    }
+
+    .planet-position {
+        font-size: 13px;
+        color: #666;
+        margin-bottom: 8px;
+    }
+
+    .planet-careers {
+        font-size: 13px;
+        color: #555;
+        line-height: 1.6;
+    }
+
+    .btn-rationale {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        font-size: 14px;
+        transition: all 0.3s;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-rationale:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+
+    @media (max-width: 768px) {
+        .insights-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .modal-content {
+            max-height: 95vh;
+        }
+    }
+</style>
+
+<div class="career-dashboard">
+    <!-- Overall Strength Header -->
+    <div class="strength-header">
+        <h2>📊 Career Analysis Overview</h2>
+        <div class="strength-stats">
+            <div class="stat-item">
+                <div class="stat-label">Career Strength</div>
+                <div class="stat-value">{{ career_strength|upper }}</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Overall Score</div>
+                <div class="stat-value">
+                    {% set total_score = (scores.values()|sum / scores.values()|length) if scores.values()|length > 0 else 0 %}
+                    {{ "%.1f"|format(total_score * 10) }}/10
+                </div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Active Indicators</div>
+                <div class="stat-value">{{ applied_rules|length }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Key Insights Grid -->
+    {% set phase1_rules = applied_rules|selectattr('phase', 'equalto', 1)|list %}
+    {% set phase2_rules = applied_rules|selectattr('phase', 'equalto', 2)|list %}
+    {% set phase3_rules = applied_rules|selectattr('phase', 'equalto', 3)|list %}
+
+    <div class="insights-grid">
+        <!-- Career Path -->
+        {% for rule in phase1_rules %}
+            {% if 'business_vs_job' in rule.rule_id %}
+                {% set career_path = rule.explanation.split('Career type:')[1].split('.')[0] if 'Career type:' in rule.explanation else 'Not determined' %}
+                <div class="insight-card {% if rule.score >= 0.7 %}excellent{% elif rule.score >= 0.5 %}good{% else %}moderate{% endif %}">
+                    <div class="insight-title">💼 Recommended Career Path</div>
+                    <div class="insight-value">{{ career_path|trim }}</div>
+                    <div class="insight-desc">Based on 6th vs 7th house analysis</div>
+                </div>
+            {% endif %}
+        {% endfor %}
+
+        <!-- Career Fields -->
+        {% for rule in phase2_rules %}
+            {% if 'planetary_career_indicators' in rule.rule_id %}
+                {% set fields = rule.explanation.split('Indicated fields:')[1].split('.')[0] if 'Indicated fields:' in rule.explanation else 'Various fields' %}
+                <div class="insight-card good">
+                    <div class="insight-title">🎯 Best Career Fields</div>
+                    <div class="insight-value" style="font-size: 16px;">{{ fields|trim }}</div>
+                    <div class="insight-desc">Based on planetary influences</div>
+                </div>
+            {% endif %}
+        {% endfor %}
+
+        <!-- Journey Type -->
+        {% for rule in phase2_rules %}
+            {% if 'benefic_malefic' in rule.rule_id %}
+                {% set journey = rule.explanation.split('Career path:')[1].split('.')[0] if 'Career path:' in rule.explanation else 'balanced' %}
+                <div class="insight-card {% if 'smooth' in journey %}excellent{% else %}good{% endif %}">
+                    <div class="insight-title">🛤️ Career Journey</div>
+                    <div class="insight-value">{{ journey|capitalize|trim }}</div>
+                    <div class="insight-desc">Based on benefic/malefic ratio in D10</div>
+                </div>
+            {% endif %}
+        {% endfor %}
+
+        <!-- Foundation -->
+        {% for rule in phase1_rules %}
+            {% if 'big_three' in rule.rule_id %}
+                <div class="insight-card {% if rule.score >= 0.7 %}excellent{% elif rule.score >= 0.4 %}good{% else %}moderate{% endif %}">
+                    <div class="insight-title">⭐ Career Foundation</div>
+                    <div class="insight-value">
+                        {% if rule.score >= 0.7 %}Strong
+                        {% elif rule.score >= 0.4 %}Moderate
+                        {% else %}Developing{% endif %}
+                    </div>
+                    <div class="insight-desc">Big Three Lords Score: {{ "%.2f"|format(rule.score) }}</div>
+                </div>
+            {% endif %}
+        {% endfor %}
+    </div>
+
+    <!-- Top Career Recommendations with Rationale Button -->
+    {% if profession_probabilities and profession_probabilities.top_professions %}
+    <div class="section-card">
+        <h3>🎓 Top Career Recommendations</h3>
+        <div style="margin-bottom: 15px;">
+            <button class="btn-rationale" onclick="document.getElementById('rationaleModal').classList.add('active'); document.body.style.overflow = 'hidden';">
+                🔍 View Planetary Rationale
+            </button>
+        </div>
+        <div class="career-fields">
+            {% for career in profession_probabilities.top_professions %}
+            {% if loop.index <= 5 %}
+            <div class="career-field">
+                <div class="field-rank">#{{ loop.index }}</div>
+                <div class="field-info">
+                    <div class="field-name">{{ career.name }}</div>
+                    <div class="field-desc">{{ career.description }}</div>
+                    <div class="field-bar">
+                        <div class="field-bar-fill" style="width: {{ career.probability }}%"></div>
+                    </div>
+                </div>
+                <div class="field-score {% if career.probability >= 70 %}high{% elif career.probability >= 40 %}medium{% else %}low{% endif %}">
+                    {{ career.probability }}%
+                </div>
+            </div>
+            {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Rules Checklist - Grouped by Chart Type -->
+    <div class="rules-checklist-section">
+        <h3>📋 Career Rules Analysis</h3>
+        <p style="color: #666; margin-bottom: 20px;">Comprehensive rule-by-rule evaluation grouped by chart type</p>
+
+        {% set all_rules = phase1_rules + phase2_rules + phase3_rules %}
+
+        <!-- D1 Rules - Only pure D1 rules, not D10 -->
+        {% set d1_rules = [] %}
+        {% for rule in all_rules %}
+            {% if ('d1' in rule.rule_id and 'd10' not in rule.rule_id) or
+                  ('artha' in rule.rule_id and 'd10' not in rule.name.lower()) or
+                  ('business_vs_job' in rule.rule_id) %}
+                {% set _ = d1_rules.append(rule) %}
+            {% endif %}
+        {% endfor %}
+
+        {% if d1_rules|length > 0 %}
+        <div class="rule-group d1-rules">
+            <div class="rule-group-header">
+                <div class="rule-group-title">📈 D1 (Birth Chart) Rules</div>
+                <div class="rule-group-stats">{{ d1_rules|length }} rules evaluated</div>
+            </div>
+            {% for rule in d1_rules %}
+            <div class="rule-item">
+                <div class="rule-status passed">✓</div>
+                <div class="rule-content">
+                    <div class="rule-name">{{ rule.name }}</div>
+                    <div class="rule-explanation">{{ rule.explanation }}</div>
+                    <div class="rule-tags">
+                        <span class="rule-tag d1">D1 Chart</span>
+                        <span class="rule-tag validated" title="Houses counted from Ascendant as 1st house">✓ From Ascendant</span>
+                        {% if 'artha' in rule.rule_id %}
+                            <span class="rule-tag" style="background: #ECEFF1; color: #455A64;">Houses: 2, 6, 10</span>
+                        {% elif 'business_vs_job' in rule.rule_id %}
+                            <span class="rule-tag" style="background: #ECEFF1; color: #455A64;">Houses: 6 vs 7</span>
+                        {% endif %}
+                    </div>
+                </div>
+                {% if rule.score is number %}
+                <div class="rule-score">{{ "%.2f"|format(rule.score) }}</div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- D10 Rules - All rules mentioning D10 -->
+        {% set d10_rules = [] %}
+        {% set comparison_rules = [] %}
+        {% for rule in all_rules %}
+            {% if 'd1_d10' in rule.rule_id or 'd1' in rule.rule_id and 'd10' in rule.rule_id %}
+                {% set _ = comparison_rules.append(rule) %}
+            {% elif 'd10' in rule.rule_id or 'd10' in rule.name.lower() %}
+                {% set _ = d10_rules.append(rule) %}
+            {% endif %}
+        {% endfor %}
+
+        {% if d10_rules|length > 0 %}
+        <div class="rule-group d10-rules">
+            <div class="rule-group-header">
+                <div class="rule-group-title">🎯 D10 (Dashamsha) Rules</div>
+                <div class="rule-group-stats">{{ d10_rules|length }} rules evaluated</div>
+            </div>
+            {% for rule in d10_rules %}
+            <div class="rule-item">
+                <div class="rule-status passed">✓</div>
+                <div class="rule-content">
+                    <div class="rule-name">{{ rule.name }}</div>
+                    <div class="rule-explanation">{{ rule.explanation }}</div>
+                    <div class="rule-tags">
+                        <span class="rule-tag d10">D10 Chart</span>
+                        {% if 'upachaya' in rule.explanation.lower() %}
+                            <span class="rule-tag" style="background: #C8E6C9; color: #2E7D32;">Upachaya</span>
+                        {% endif %}
+                        {% if 'lagna' in rule.name.lower() or 'ascendant' in rule.name.lower() %}
+                            <span class="rule-tag" style="background: #ECEFF1; color: #455A64;">Lagna</span>
+                        {% endif %}
+                        {% if '10th' in rule.name %}
+                            <span class="rule-tag" style="background: #ECEFF1; color: #455A64;">10th House</span>
+                        {% endif %}
+                    </div>
+                </div>
+                {% if rule.score is number %}
+                <div class="rule-score">{{ "%.2f"|format(rule.score) }}</div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- D1 vs D10 Comparison Rules -->
+        {% if comparison_rules|length > 0 %}
+        <div class="rule-group" style="border-color: #FFC107;">
+            <div class="rule-group-header">
+                <div class="rule-group-title">🔄 D1 vs D10 Comparison Rules</div>
+                <div class="rule-group-stats">{{ comparison_rules|length }} rules evaluated</div>
+            </div>
+            {% for rule in comparison_rules %}
+            <div class="rule-item">
+                <div class="rule-status passed">✓</div>
+                <div class="rule-content">
+                    <div class="rule-name">{{ rule.name }}</div>
+                    <div class="rule-explanation">{{ rule.explanation }}</div>
+                    <div class="rule-tags">
+                        <span class="rule-tag comparison">D1+D10</span>
+                        <span class="rule-tag d1">D1 Chart</span>
+                        <span class="rule-tag d10">D10 Chart</span>
+                    </div>
+                </div>
+                {% if rule.score is number %}
+                <div class="rule-score">{{ "%.2f"|format(rule.score) }}</div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Dasha Rules -->
+        {% set dasha_rules = [] %}
+        {% for rule in all_rules %}
+            {% if 'dasha' in rule.rule_id or 'jupiter_aspects' in rule.rule_id or 'saturn_aspects' in rule.rule_id %}
+                {% set _ = dasha_rules.append(rule) %}
+            {% endif %}
+        {% endfor %}
+
+        {% if dasha_rules|length > 0 %}
+        <div class="rule-group dasha-rules">
+            <div class="rule-group-header">
+                <div class="rule-group-title">⏰ Dasha & Timing Rules</div>
+                <div class="rule-group-stats">{{ dasha_rules|length }} rules evaluated</div>
+            </div>
+            {% for rule in dasha_rules %}
+            <div class="rule-item">
+                <div class="rule-status passed">✓</div>
+                <div class="rule-content">
+                    <div class="rule-name">{{ rule.name }}</div>
+                    <div class="rule-explanation">{{ rule.explanation }}</div>
+                    <div class="rule-tags">
+                        <span class="rule-tag dasha">Dasha/Timing</span>
+                        {% if 'jupiter' in rule.name.lower() %}
+                            <span class="rule-tag" style="background: #FFF9C4; color: #F57F17;">♃ Jupiter</span>
+                        {% endif %}
+                        {% if 'saturn' in rule.name.lower() %}
+                            <span class="rule-tag" style="background: #E0E0E0; color: #424242;">♄ Saturn</span>
+                        {% endif %}
+                        {% if 'd10' in rule.explanation.lower() %}
+                            <span class="rule-tag d10">D10</span>
+                        {% endif %}
+                    </div>
+                </div>
+                {% if rule.score is number %}
+                <div class="rule-score">{{ "%.2f"|format(rule.score) }}</div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- SAV/BAV Rules -->
+        {% set sav_rules = [] %}
+        {% for rule in all_rules %}
+            {% if 'ashtakavarga' in rule.rule_id or 'sav' in rule.rule_id or 'bav' in rule.rule_id %}
+                {% set _ = sav_rules.append(rule) %}
+            {% endif %}
+        {% endfor %}
+
+        {% if sav_rules|length > 0 %}
+        <div class="rule-group sav-rules">
+            <div class="rule-group-header">
+                <div class="rule-group-title">🔢 Ashtakavarga (SAV/BAV) Rules</div>
+                <div class="rule-group-stats">{{ sav_rules|length }} rules evaluated</div>
+            </div>
+            {% for rule in sav_rules %}
+            <div class="rule-item">
+                <div class="rule-status passed">✓</div>
+                <div class="rule-content">
+                    <div class="rule-name">{{ rule.name }}</div>
+                    <div class="rule-explanation">{{ rule.explanation }}</div>
+                    <div class="rule-tags">
+                        <span class="rule-tag sav">Ashtakavarga</span>
+                        {% if 'sav' in rule.rule_id.lower() %}
+                            <span class="rule-tag" style="background: #F3E5F5; color: #7B1FA2;">SAV</span>
+                        {% endif %}
+                        {% if 'bav' in rule.rule_id.lower() %}
+                            <span class="rule-tag" style="background: #E1BEE7; color: #6A1B9A;">BAV</span>
+                        {% endif %}
+                        {% if '10th' in rule.explanation %}
+                            <span class="rule-tag" style="background: #ECEFF1; color: #455A64;">10th House</span>
+                        {% endif %}
+                    </div>
+                </div>
+                {% if rule.score is number %}
+                <div class="rule-score">{{ "%.2f"|format(rule.score) }}</div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Rationale Modal -->
+<div class="modal-backdrop" id="rationaleModal" onclick="if(event.target === this) { this.classList.remove('active'); document.body.style.overflow = 'auto'; }">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>🔍 Planetary Rationale for Career Recommendations</h3>
+            <button class="modal-close" onclick="document.getElementById('rationaleModal').classList.remove('active'); document.body.style.overflow = 'auto';">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="rationale-section">
+                <div class="rationale-title">Key Planets Influencing Career</div>
+
+                <!-- This section will be dynamically populated based on chart data -->
+                <p style="color: #666; margin-bottom: 20px;">
+                    The following planets and their positions contribute to the recommended career fields:
+                </p>
+
+                <!-- Example planetary influences - will be customized per chart -->
+                <div class="planet-influence">
+                    <div class="planet-icon">☀️</div>
+                    <div class="planet-details">
+                        <div class="planet-name">Sun (Surya)</div>
+                        <div class="planet-position">10th House Lord / Exalted in D10</div>
+                        <div class="planet-careers">
+                            <strong>Indicates:</strong> Leadership roles, Government service, Administration, Politics, Medicine
+                        </div>
+                    </div>
+                </div>
+
+                <div class="planet-influence">
+                    <div class="planet-icon">☿️</div>
+                    <div class="planet-details">
+                        <div class="planet-name">Mercury (Budha)</div>
+                        <div class="planet-position">Strong in 10th House D1</div>
+                        <div class="planet-careers">
+                            <strong>Indicates:</strong> Technology, Communications, Writing, Accounting, Business, Teaching
+                        </div>
+                    </div>
+                </div>
+
+                <div class="planet-influence">
+                    <div class="planet-icon">♃</div>
+                    <div class="planet-details">
+                        <div class="planet-name">Jupiter (Guru)</div>
+                        <div class="planet-position">Aspects 10th House in D10</div>
+                        <div class="planet-careers">
+                            <strong>Indicates:</strong> Law, Finance, Teaching, Spirituality, Advisory roles, Banking
+                        </div>
+                    </div>
+                </div>
+
+                <div class="planet-influence">
+                    <div class="planet-icon">♄</div>
+                    <div class="planet-details">
+                        <div class="planet-name">Saturn (Shani)</div>
+                        <div class="planet-position">Well-placed in D10</div>
+                        <div class="planet-careers">
+                            <strong>Indicates:</strong> Engineering, Construction, Labor-intensive work, Service sector, Long-term careers
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="rationale-section">
+                <div class="rationale-title">How Recommendations Are Calculated</div>
+                <ul style="line-height: 1.8; color: #555;">
+                    <li><strong>10th House Analysis:</strong> Planet in/aspecting 10th house (career house) in D1 and D10</li>
+                    <li><strong>10th Lord Position:</strong> Strength and placement of 10th house lord</li>
+                    <li><strong>Planetary Strength:</strong> Exaltation, own sign, friendly signs in D1 and D10</li>
+                    <li><strong>Ashtakavarga:</strong> SAV points in 10th house (higher = better career prospects)</li>
+                    <li><strong>Dasha Periods:</strong> Current and upcoming planetary periods for timing</li>
+                    <li><strong>Yogas:</strong> Special planetary combinations (Raja Yoga, Dhana Yoga, etc.)</li>
+                </ul>
+            </div>
+
+            <div class="rationale-section">
+                <div class="rationale-title">Research Notes</div>
+                <p style="color: #666; line-height: 1.8;">
+                    This analysis is based on classical Vedic astrology texts including Brihat Parashara Hora Shastra,
+                    Jataka Parijata, and Phaladeepika. The career recommendations combine multiple factors across
+                    D1 (birth chart), D10 (career-specific divisional chart), Dasha timing, and Ashtakavarga strength
+                    for comprehensive analysis.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>

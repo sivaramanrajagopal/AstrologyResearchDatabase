@@ -42,7 +42,7 @@
                 <tr>
                     <td style="font-weight: 600; color: #333;">{{ r.get('name') or r.get('rule_id', '—') }}</td>
                     <td style="color: #555; font-size: 0.95em; line-height: 1.5;">{{ r.get('explanation') or '—' }}</td>
-                    <td style="font-weight: 500;">{{ r.get('score', '—') }}</td>
+                    <td style="font-weight: 500;">{% if r.get('score') is number %}{{ "%.2f"|format(r.get('score')) }}{% else %}{{ r.get('score', '—') }}{% endif %}</td>
                 </tr>
                 {% endfor %}
             </tbody>
